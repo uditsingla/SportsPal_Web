@@ -22,7 +22,12 @@ class User extends Entity
         'first_name' => true,
         'last_name' => true,
         'dob' => true,
-        'sex' => true
+        'gender' => true,
+        'image' => true,
+        'social_platform' => true,
+        'social_id' => true,
+        'latitude' => true,
+        'longitude' => true
     ];
     
     protected function _setPassword($value)

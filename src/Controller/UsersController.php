@@ -26,24 +26,13 @@ class UsersController extends AppController
 	}
 	public function isAuthorized($user)
 	{
-		/** $action = $this->request->params['action'];
-		if (in_array($action, ['index', 'add', 'tags'])) {
-			return true;
-		}
-		if (empty($this->request->params['pass'][0])) {
-			return false;
-		}	
-		$id = $this->request->params['pass'][0];
-		$bookmark = $this->Users->get($id);
-		if ($bookmark->user_id == $user['id']) {
-			return true;
-		} **/
 		
 	}
     public function login()
 	{
 		try {
 			$this->autoRender = FALSE;
+			$this->loadmodel('UserDevices');			
 			$user = $this->Users->newEntity();
 			switch (true) {
 					case $this->request->is('post'):
@@ -53,15 +42,26 @@ class UsersController extends AppController
 							$success = true;
 							$return_data = "Data Missing";
 						} else {
-							$user = $this->Auth->identify();
-							if(!$user) {
-								$status  = 200;
-								$success = true;
-								$return_data = "User not found";
+							if(!isset($request_data['device_type']) OR !isset($request_data['device_token'])) { 
+									$status  = 200;
+									$success = true;
+									$return_data = "Device type and token required";
 							} else {
-								$status  = 200;
-								$success = true;
-								$return_data = $user;
+								$user = $this->Auth->identify();
+								if(!$user) {
+									$status  = 200;
+									$success = true;
+									$return_data = "User not found";
+								} else {
+									$status  = 200;
+									$success = true;
+									$return_data = $user;
+									$request_data['user_id']=$user['id'];
+									$userDevice = $this->UserDevices->newEntity();
+									$userDevice = $this->UserDevices->patchEntity($userDevice, $request_data);
+									$this->UserDevices->save($userDevice);
+			
+								}
 							}
 						}
 				break;
@@ -76,16 +76,32 @@ class UsersController extends AppController
 		}
 		$this->response->type('json');
 		$json = json_encode(array('status'=>$status,'message'=>$return_data,'success'=>$success));
+		$this->response->statusCode($status);
 		$this->response->body($json);
 	}
     
     public function logout()
 	{
-		//$this->Flash->success('You are now logged out.');
-		$this->request->session()->delete('Cart.coupon');
-		$this->Auth->logout();
-		//return $this->redirect($this->Auth->logout());
-		return $this->redirect(SITE_URL);
+		$this->autoRender = FALSE;
+			$request_data = $this->request->input('json_decode', true);
+		if(!isset($request_data['device_type']) OR !isset($request_data['device_token'])) {
+			$status  = 200;
+			$success = true;
+			$return_data = "Device type and device token missing";
+		} else {
+			$this->loadmodel('UserDevices');
+			$this->UserDevices->deleteAll(['device_type' => $request_data['device_type'],'device_token' => $request_data['device_token']]);
+			
+			$this->Auth->logout();
+			//return $this->redirect(SITE_URL);
+			$status  = 200;
+			$success = true;
+			$return_data = "Logged out successfully";
+		}
+		$this->response->type('json');
+		$json = json_encode(array('status'=>$status,'message'=>$return_data,'success'=>$success));
+		$this->response->statusCode($status);
+		$this->response->body($json);
 	}
 
     /**
@@ -174,6 +190,67 @@ class UsersController extends AppController
         //exit;
     }
 
+	
+	public function sports($user_id=''){
+		
+		try { 
+			$this->autoRender = FALSE;	
+			$this->loadmodel('SportsPreferences');		
+			switch (true) {
+					case $this->request->is('get'):
+						if(!isset($user_id) OR $user_id=="") {
+							$return_data= "User Id required";
+							$success=FALSE;
+							$status  = 200;
+						} else {
+							$return_data= $this->SportsPreferences->find()->select(['id', 'sport_id','Sports.name'])->leftJoin(['Sports' => 'sports'],['Sports.id = SportsPreferences.sport_id'])->where(['user_id'=>$user_id]);
+							$success=TRUE;
+							$status  = 200;
+						}
+						break;
+					case $this->request->is('post'):
+						$request_data = $this->request->input('json_decode', true);
+						if(!isset($request_data['sport_id']) OR !is_array($request_data['sport_id'])) {
+							$return_data= "Sport Ids should an array";
+							$success=FALSE;
+							$status  = 200;
+						} else if(!isset($request_data['user_id']) OR $request_data['user_id']=="") {
+							$return_data= "User Id required";
+							$success=FALSE;
+							$status  = 200;
+						} else {
+							$this->SportsPreferences->deleteAll(['user_id'=>$request_data['user_id']]);
+							foreach($request_data['sport_id'] as $sport_id) {
+									$content_array="";
+									$SportsPreferences = $this->SportsPreferences->newEntity();
+									$content_array['user_id']=$request_data['user_id'];
+									$content_array['sport_id']=$sport_id;
+									$SportsPreferences = $this->SportsPreferences->patchEntity($SportsPreferences, $content_array);
+									$this->SportsPreferences->save($SportsPreferences);
+							}
+								$status  = 200;
+								$success = true;
+								$return_data = "Data added successfully";
+						}
+						break;
+					default:
+						$status  = 400;
+						$success = false;
+						$return_data = "This method not allowed";
+						break;
+			}
+		} catch (Exception $e) {
+				$status  = 400;
+				$return_data= json_encode(array('exception_message'=>$e->getMessage()));
+				$success = false;
+		}
+		$this->response->type('json');
+		$json = json_encode(array('status'=>$status,'message'=>$return_data,'success'=>$success));
+		$this->response->statusCode($status);
+		$this->response->body($json);
+		
+	}
+	
     /**
      * Edit method
      *
@@ -396,14 +473,5 @@ class UsersController extends AppController
 		}
 	}
 	
-	public function referrals() {
-		if ($this->Auth->user()) {	
-			if ($this->request->is('ajax')) {
-				
-			}
-			
-		} else {
-			return $this->redirect(SITE_URL);
-		}
-	}
+	
 }
