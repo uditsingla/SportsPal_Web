@@ -226,8 +226,8 @@ return [
              * the following line and set the port accordingly
              */
             //'port' => 'non_standard_port_number',
-            'username' => 'root',
-            'password' => '',
+            'username' => 'sportspaluser',
+            'password' => 'v4SVBQrV2E56f82onENnUa8mt',
             'database' => 'sportspal',
             'encoding' => 'utf8',
             'timezone' => 'UTC',
