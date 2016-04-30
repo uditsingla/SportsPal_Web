@@ -39,18 +39,18 @@ class UsersController extends AppController
 						$request_data = $this->request->input('json_decode', true);
 						if(!isset($request_data['email']) OR !isset($request_data['password'])) {
 							$status  = 200;
-							$success = true;
+							$success = false;
 							$return_data = "Data Missing";
 						} else {
 							if(!isset($request_data['device_type']) OR !isset($request_data['device_token'])) { 
 									$status  = 200;
-									$success = true;
+									$success = false;
 									$return_data = "Device type and token required";
 							} else {
 								$user = $this->Auth->identify();
 								if(!$user) {
 									$status  = 200;
-									$success = true;
+									$success = false;
 									$return_data = "User not found";
 								} else {
 									$status  = 200;
@@ -86,7 +86,7 @@ class UsersController extends AppController
 			$request_data = $this->request->input('json_decode', true);
 		if(!isset($request_data['device_type']) OR !isset($request_data['device_token'])) {
 			$status  = 200;
-			$success = true;
+			$success = false;
 			$return_data = "Device type and device token missing";
 		} else {
 			$this->loadmodel('UserDevices');
@@ -148,7 +148,7 @@ class UsersController extends AppController
 							$request_data = $this->request->input('json_decode', true);
 							if(!isset($request_data['email']) OR !isset($request_data['password'])) {
 								$status  = 200;
-								$success = true;
+								$success = false;
 								$return_data = "Data Missing";
 							} else {
 								$result = $this->Users->findByEmail($request_data['email']);	
@@ -160,12 +160,12 @@ class UsersController extends AppController
 										$return_data = "User registered successfully ";
 									} else {
 										$status  = 200;
-										$success = true;
+										$success = false;
 										$return_data = "Error while adding user";
 									}
 								} else {
 									$status  = 200;
-									$success = true;
+									$success = false;
 									$return_data = "Email Already Exist";
 								}
 							}
