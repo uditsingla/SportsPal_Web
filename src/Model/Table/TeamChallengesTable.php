@@ -8,9 +8,9 @@ use Cake\ORM\Table;
 use Cake\Validation\Validator;
 
 /**
- * Teams Model
+ * TeamChallenges Model
  */
-class TeamsTable extends Table
+class TeamChallengesTable extends Table
 {
 
     /**
@@ -21,12 +21,9 @@ class TeamsTable extends Table
      */
     public function initialize(array $config)
     {
-        $this->table('teams');
+        $this->table('team_challenges');
         $this->displayField('id');
         $this->primaryKey('id');
 		$this->addBehavior('Timestamp');
-		$this->belongsTo('Users',['foreignKey' => 'creator_id']);
-		$this->belongsTo('Sports',['foreignKey' => 'sport_id']);
-		$this->hasMany('TeamMembers',['foreignKey' => 'team_id']);
     }
 }
