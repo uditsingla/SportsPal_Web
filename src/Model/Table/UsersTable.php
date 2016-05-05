@@ -25,7 +25,11 @@ class UsersTable extends Table
         $this->displayField('id');
         $this->primaryKey('id');
 		$this->addBehavior('Timestamp');
-		//$this->hasOne('Userdetails',['foreignKey' => 'user_id']);
+		$this->hasMany('FavouriteUsers',['foreignKey' => 'user_id']);
+		$this->hasMany('UserFavLocations',['foreignKey' => 'user_id']);
+		$this->hasMany('Games',['foreignKey' => 'user_id']);
+		$this->hasMany('TeamMembers',['foreignKey' => 'user_id']);
+		$this->hasMany('Teams',['foreignKey' => 'creator_id']);
     }
 
     public function buildRules(RulesChecker $rules)

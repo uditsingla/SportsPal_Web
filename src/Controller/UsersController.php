@@ -109,27 +109,71 @@ class UsersController extends AppController
      *
      * @return void
      */
-    public function index()
+    public function index($user_id='')
     { 
-        $this->set('users', $this->paginate($this->Users));
-        $this->set('_serialize', ['users']);
+        try { 
+			$this->autoRender = FALSE;	
+			$this->loadmodel('Users');		
+			switch (true) {
+					case $this->request->is('get'):
+						if(!isset($user_id) OR $user_id=="") {
+							$return_data= "User Id required";
+							$success=FALSE;
+							$status  = 200;
+						} else {
+							$return_data= $this->Users->find('all',['contain' => ['UserFavLocations','Teams','FavouriteUsers','Games']])->select()->where(['Users.id'=>$user_id])->first();
+							if($return_data) {
+								unset($return_data->password);
+								$success=TRUE;
+								$status  = 200;
+							} else {
+								$return_data="User not found";
+								$success=FALSE;
+								$status  = 200;
+							}
+							
+						}
+						break;
+					case $this->request->is('post'):
+						$request_data = $this->request->input('json_decode', true);
+						if(!isset($request_data['user_id']) OR $request_data['user_id']=="") {
+							$return_data= "User Id required";
+							$success=FALSE;
+							$status  = 200;
+						} else {
+
+							$UserData = $this->Users->newEntity();
+							$request_data['id']=$request_data['user_id'];
+							$UserData = $this->Users->patchEntity($UserData, $request_data);
+							$checkIf=$this->Users->save($UserData);
+							if($checkIf) {
+								$status  = 200;
+								$success = true;
+								$return_data = "Data updated successfully";
+							} else {
+								$status  = 200;
+								$success = false;
+								$return_data = "Error while updating";
+							}
+						}
+						break;
+					default:
+						$status  = 400;
+						$success = false;
+						$return_data = "This method not allowed";
+						break;
+			}
+		} catch (Exception $e) {
+				$status  = 400;
+				$return_data= json_encode(array('exception_message'=>$e->getMessage()));
+				$success = false;
+		}
+		$this->response->type('json');
+		$json = json_encode(array('status'=>$status,'message'=>$return_data,'success'=>$success));
+		$this->response->statusCode($status);
+		$this->response->body($json);
     }
 
-    /**
-     * View method
-     *
-     * @param string|null $id User id.
-     * @return void
-     * @throws \Cake\Network\Exception\NotFoundException When record not found.
-     */
-    public function view($id = null)
-    {
-        $user = $this->Users->get($id, [
-            'contain' => ['Bookmarks']
-        ]);
-        $this->set('user', $user);
-        $this->set('_serialize', ['user']);
-    }
 
     /**
      * Add method
@@ -436,42 +480,83 @@ class UsersController extends AppController
 		}
 	}
 	
-	public function orders() {
-		if ($this->Auth->user()) {	
-			
-			$this->loadModel('Orders');
-			$orderDetails=$this->Orders->find('all',['contain' => ['Orderdetails'=>['Products']]])->where(['user_id'=>$this->Auth->user('id')]);  
-			$this->set (array('orderDetails'=>$orderDetails));
-		} else {
-			return $this->redirect(SITE_URL);
-		}
-	}
 	
-	public function measurement() {
-		if ($this->Auth->user()) {	
-			$this->loadModel('Measurements');
-			$measurement=$this->Measurements->find('all',['contain' => ['Products']])->where(['user_id'=>$this->Auth->user('id'),'deleted'=>'0']);  
-			$this->set (array('measurements'=>$measurement));
-		} else {
-			return $this->redirect(SITE_URL);
-		}
-	}
-	public function removemeasurement() {
-		if ($this->Auth->user()) {	
-			if ($this->request->is('ajax')) {
-				$this->layout =FALSE;
-				$this->autoRender = FALSE;
-					$this->loadModel('Measurements');
-					$measurements = $this->Measurements->newEntity();
-					$this->request->data['deleted']=1;
-					$userdetails = $this->Measurements->patchEntity($measurements, $this->request->data);
-					$data=$this->Measurements->save($userdetails);
-				
+	public function locations($user_id=''){
+		
+		try { 
+			$this->autoRender = FALSE;	
+			$this->loadmodel('UserFavLocations');		
+			switch (true) {
+					case $this->request->is('get'):
+						if(!isset($user_id) OR $user_id=="") {
+							$return_data= "User Id required";
+							$success=FALSE;
+							$status  = 200;
+						} else {
+							$return_data= $this->UserFavLocations->find()->select(['id', 'latitude','longitude','address'])->where(['user_id'=>$user_id]);
+							$success=TRUE;
+							$status  = 200;
+						}
+						break;
+					case $this->request->is('post'):
+						$request_data = $this->request->input('json_decode', true);
+						if(!isset($request_data['latitude']) OR !isset($request_data['longitude']) OR !isset($request_data['address'])) {
+							$return_data= "Latitude,Longitude and Address are required";
+							$success=FALSE;
+							$status  = 200;
+						} else if(!isset($request_data['user_id']) OR $request_data['user_id']=="") {
+							$return_data= "User Id required";
+							$success=FALSE;
+							$status  = 200;
+						} else {
+								$UserFavLocations = $this->UserFavLocations->newEntity();
+								$UserFavLocations = $this->UserFavLocations->patchEntity($UserFavLocations, $request_data);
+								$this->UserFavLocations->save($UserFavLocations);
+								$status  = 200;
+								$success = true;
+								$return_data = "Data added successfully";
+						}
+						break;
+					case $this->request->is('delete'):
+						$request_data = $this->request->input('json_decode', true);
+						if(!isset($request_data['location_id'])) {
+							$return_data= "Location id required";
+							$success=FALSE;
+							$status  = 200;
+						} else if(!isset($request_data['user_id']) OR $request_data['user_id']=="") {
+							$return_data= "User Id required";
+							$success=FALSE;
+							$status  = 200;
+						} else {
+								$checkIf=$this->UserFavLocations->deleteAll(['id'=>$request_data['location_id']]);
+								if($checkIf){
+									$status  = 200;
+									$success = true;
+									$return_data = "Data deleted successfully";
+								} else {
+									$status  = 200;
+									$success = false;
+									$return_data = "Error while deletion";
+								}
+						}
+						
+						break;
+					default:
+						$status  = 400;
+						$success = false;
+						$return_data = "This method not allowed";
+						break;
 			}
-		} else {
-			return $this->redirect(SITE_URL);
+		} catch (Exception $e) {
+				$status  = 400;
+				$return_data= json_encode(array('exception_message'=>$e->getMessage()));
+				$success = false;
 		}
+		$this->response->type('json');
+		$json = json_encode(array('status'=>$status,'message'=>$return_data,'success'=>$success));
+		$this->response->statusCode($status);
+		$this->response->body($json);
+		
 	}
-	
 	
 }
