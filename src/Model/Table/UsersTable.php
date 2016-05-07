@@ -6,6 +6,7 @@ use Cake\ORM\Query;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
+use Cake\Datasource\ConnectionManager;
 
 /**
  * Users Model
@@ -30,6 +31,7 @@ class UsersTable extends Table
 		$this->hasMany('Games',['foreignKey' => 'user_id']);
 		$this->hasMany('TeamMembers',['foreignKey' => 'user_id']);
 		$this->hasMany('Teams',['foreignKey' => 'creator_id']);
+		$this->hasMany('SportsPreferences',['foreignKey' => 'user_id']);
     }
 
     public function buildRules(RulesChecker $rules)
@@ -37,4 +39,10 @@ class UsersTable extends Table
         $rules->add($rules->isUnique(['email']));
         return $rules;
     }
+	
+	public function getNearbyUsers($user_id='',$sport_id='',$latitude='',$longitude='') {
+		$conn = ConnectionManager::get('default');
+		$data = $conn->execute("SELECT `id`,`first_name`,`last_name`,`email`,`dob`,`gender`,`image`,`latitude`,`longitude`, SQRT(POW(69.1 * (latitude - ".$latitude."), 2) + POW(69.1 * (".$longitude." - longitude) * COS(latitude / 57.3), 2)) AS distance FROM users WHERE `id`!=".$user_id." HAVING distance < 50 ORDER BY distance");
+		return $data->fetchAll('assoc');
+	}
 }

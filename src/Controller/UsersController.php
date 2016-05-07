@@ -559,4 +559,74 @@ class UsersController extends AppController
 		
 	}
 	
+	
+	/**
+     * GetUsers method
+     *
+     * @return void
+     */
+    public function getuser($user_id='',$sport_id='')
+    { 
+        try { 
+			$this->autoRender = FALSE;	
+			$this->loadmodel('Users');		
+			switch (true) {
+					case $this->request->is('get'):
+						if(!isset($user_id) OR $user_id=="") {
+							$return_data="User id required";
+							$success=FALSE;
+							$status  = 200;
+						} else {
+							
+							$return_data= $this->Users->find('all',['contain' => ['SportsPreferences']])->select(['latitude','longitude'])->where(['Users.id'=>$user_id])->first();
+							if($return_data) {
+								
+								$return_data = $this->Users->getNearbyUsers($user_id,$sport_id,$return_data->latitude,$return_data->longitude);
+								
+								foreach($return_data as $return) {
+									$uids[]=$return['id'];
+								}
+								
+								if(count($uids)>0) { 
+									$uid=implode($uids,",");
+									
+									if($sport_id!="") { 
+										$whr='';
+										$whr['Users.id IN']=$uids;
+										
+										$return_data=$this->Users->find('all',['contain' => ['Teams','Games','SportsPreferences'=>['conditions' => array('SportsPreferences.sport_id' => $sport_id)]]])->where([$whr]);
+									} else {
+										$return_data=$this->Users->find('all',['contain' => ['Teams','Games','SportsPreferences']])->where(['Users.id IN'=>$uids]);
+									}	 
+								}
+								
+				 
+				 
+								$success=TRUE;
+								$status  = 200;
+							} else {
+								$return_data="User not found";
+								$success=FALSE;
+								$status  = 200;
+							}
+						}
+						break;
+					default:
+						$status  = 400;
+						$success = false;
+						$return_data = "This method not allowed";
+						break;
+			}
+		} catch (Exception $e) {
+				$status  = 400;
+				$return_data= json_encode(array('exception_message'=>$e->getMessage()));
+				$success = false;
+		}
+		$this->response->type('json');
+		$json = json_encode(array('status'=>$status,'message'=>$return_data,'success'=>$success));
+		$this->response->statusCode($status);
+		$this->response->body($json);
+    }
+
+	
 }
