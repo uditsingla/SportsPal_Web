@@ -218,7 +218,7 @@ return [
             //'port' => 'non_standard_port_number',
             'username' => 'sportspaluser',
             'password' => 'v4SVBQrV2E56f82onENnUa8mt',
-            'database' => 'sportspal',
+            'database' => 'sportspaldb',
             'encoding' => 'utf8',
             'timezone' => 'UTC',
             'flags' => [],
