@@ -18,6 +18,7 @@ class Game extends Entity
     protected $_accessible = [
         'id' => true,
         'sport_id' => true,
+        'name' => true,
         'user_id' => true,
         'game_type' => true,
         'team_id' => true,

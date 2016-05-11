@@ -121,7 +121,7 @@ class UsersController extends AppController
 							$success=FALSE;
 							$status  = 200;
 						} else {
-							$return_data= $this->Users->find('all',['contain' => ['UserFavLocations','Teams','FavouriteUsers','Games']])->select()->where(['Users.id'=>$user_id])->first();
+							$return_data= $this->Users->find('all',['contain' => ['UserFavLocations','Teams','FavouriteUsers','Games','SportsPreferences']])->select()->where(['Users.id'=>$user_id])->first();
 							if($return_data) {
 								unset($return_data->password);
 								$success=TRUE;
@@ -580,7 +580,8 @@ class UsersController extends AppController
 							
 							$return_data= $this->Users->find('all',['contain' => ['SportsPreferences']])->select(['latitude','longitude'])->where(['Users.id'=>$user_id])->first();
 							if($return_data) {
-								
+								$mainUserlat=$return_data->latitude;
+								$mainUserlong=$return_data->longitude;
 								$return_data = $this->Users->getNearbyUsers($user_id,$sport_id,$return_data->latitude,$return_data->longitude);
 								
 								foreach($return_data as $return) {
@@ -597,7 +598,18 @@ class UsersController extends AppController
 										$return_data=$this->Users->find('all',['contain' => ['Teams','Games','SportsPreferences'=>['conditions' => array('SportsPreferences.sport_id' => $sport_id)]]])->where([$whr]);
 									} else {
 										$return_data=$this->Users->find('all',['contain' => ['Teams','Games','SportsPreferences']])->where(['Users.id IN'=>$uids]);
-									}	 
+									}	
+									$allUsers=[];
+									foreach($return_data as $singleUser) {
+										unset($singleUser['password']);
+										if(isset($singleUser['latitude']) && isset($singleUser['longitude']) && !empty($singleUser['longitude']) && !empty($singleUser['longitude'])) {
+											$singleUser['distance']=$this->distance($mainUserlat,$mainUserlong,$singleUser['latitude'],$singleUser['longitude']);
+										} else {
+											$singleUser['distance']=0;
+										}
+										$allUsers[]=$singleUser;
+									}
+									$return_data=$allUsers;
 								}
 								
 				 
@@ -627,6 +639,23 @@ class UsersController extends AppController
 		$this->response->statusCode($status);
 		$this->response->body($json);
     }
+	
+	function distance($lat1, $lon1, $lat2, $lon2, $unit="K") {
 
+	  $theta = $lon1 - $lon2;
+	  $dist = sin(deg2rad($lat1)) * sin(deg2rad($lat2)) +  cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * cos(deg2rad($theta));
+	  $dist = acos($dist);
+	  $dist = rad2deg($dist);
+	  $miles = $dist * 60 * 1.1515;
+	  $unit = strtoupper($unit);
+
+	  if ($unit == "K") {
+		  return ($miles * 1.609344);
+	  } else if ($unit == "N") {
+		  return ($miles * 0.8684);
+	  } else {
+		  return $miles;
+	  }
+	}
 	
 }

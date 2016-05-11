@@ -26,24 +26,44 @@ class TeamsController extends AppController
 	}
 
 	
-	public function index($team_id=null){
+	public function index($user_id='',$search_keyword=''){
 		
 		try {
 			$this->autoRender = FALSE;	
 			$this->loadmodel('Teams');
 			$this->loadmodel('TeamMembers');
+			$this->loadmodel('Users');
 			$Teams = $this->Teams->newEntity();
 			$data="";			
 			switch (true) {
 						case $this->request->is('get'):
-								if(isset($team_id) && $team_id!=null) {
-									$allTeams = $this->Teams->find('all',['contain' => ['Users', 'Sports','TeamMembers'=>['Users']]])->select(['Teams.id','Teams.sport_id','Teams.team_name','Teams.team_type','Teams.members_limit','Teams.latitude','Teams.longitude','Teams.address','Teams.creator_id','Teams.created','Teams.modified','Users.first_name','Users.last_name','Users.email','Sports.name'])->where(['Teams.id'=>$team_id])->first();
+								if($user_id!="") {
+								$return_data= $this->Users->find('all',['contain' => ['SportsPreferences']])->select()->where(['Users.id'=>$user_id])->first();
+								if($return_data) {
+									$sportids='';
+									foreach($return_data['sports_preferences'] as $sports_preferences) {
+										$sportids[]=$sports_preferences['sport_id'];
+									}
+									$whr=[];
+									$whr['Teams.sport_id IN']=$sportids;
+									if(isset($search_keyword) && $search_keyword!='') {
+										$whr['Teams.team_name LIKE']='%'.$search_keyword.'%';
+									}
+									$allTeams = $this->Teams->find('all',['contain' => ['Users', 'Sports']])->select(['Teams.id','Teams.sport_id','Teams.team_name','Teams.team_type','Teams.members_limit','Teams.latitude','Teams.longitude','Teams.address','Teams.creator_id','Teams.created','Teams.modified','Users.first_name','Users.last_name','Users.email','Sports.name'])->where($whr);
+									$success = true;
 								} else {
-									$allTeams = $this->Teams->find('all',['contain' => ['Users', 'Sports']])->select(['Teams.id','Teams.sport_id','Teams.team_name','Teams.team_type','Teams.members_limit','Teams.latitude','Teams.longitude','Teams.address','Teams.creator_id','Teams.created','Teams.modified','Users.first_name','Users.last_name','Users.email','Sports.name']);
+									$allTeams="User not found";
+									$success=FALSE;
 								}
-								$status  = 200;
+							
+								
+							} else {
+								$allTeams = $this->Teams->find('all',['contain' => ['Users', 'Sports']])->select(['Teams.id','Teams.sport_id','Teams.team_name','Teams.team_type','Teams.members_limit','Teams.latitude','Teams.longitude','Teams.address','Teams.creator_id','Teams.created','Teams.modified','Users.first_name','Users.last_name','Users.email','Sports.name']);
 								$success = true;
-								$return_data = $allTeams;	
+							}
+							
+								$status  = 200;
+								$return_data = $allTeams;		
 								
 							break;
 						case $this->request->is('post'):
@@ -97,6 +117,79 @@ class TeamsController extends AppController
 		
 	}
 	
+	public function singleteam($team_id){
+		
+		try {
+			$this->autoRender = FALSE;	
+			$this->loadmodel('Teams');
+			$this->loadmodel('TeamMembers');
+			$Teams = $this->Teams->newEntity();
+			$data="";			
+			switch (true) {
+						case $this->request->is('get'):
+								if(isset($team_id) && $team_id!=null) {
+									$allTeams = $this->Teams->find('all',['contain' => ['Users', 'Sports','TeamMembers'=>['Users']]])->select(['Teams.id','Teams.sport_id','Teams.team_name','Teams.team_type','Teams.members_limit','Teams.latitude','Teams.longitude','Teams.address','Teams.creator_id','Teams.created','Teams.modified','Users.first_name','Users.last_name','Users.email','Sports.name'])->where(['Teams.id'=>$team_id])->first();
+									$status  = 200;
+									$success = true;
+									$return_data = $allTeams;	
+								} else {
+									$status  = 200;
+									$success = false;
+									$return_data = "Team Id required";	
+								}
+								
+								
+							break;
+						case $this->request->is('post'):
+							$request_data = $this->request->input('json_decode', true);
+							if(!isset($request_data['sport_id']) OR !isset($request_data['team_name']) OR !isset($request_data['team_type']) OR !isset($request_data['members_limit']) OR !isset($request_data['latitude']) OR !isset($request_data['longitude']) OR !isset($request_data['address']) OR !isset($request_data['creator_id'])) {
+								$status  = 200;
+								$success = false;
+								$return_data = "Data Missing";
+							} else { 
+								if(isset($request_data['team_members'])) {
+									if(is_array($request_data['team_members'])) {
+										$team_members = $request_data['team_members'];
+									}
+									unset($request_data['team_members']);
+								}
+								$Teams = $this->Teams->patchEntity($Teams, $request_data);
+								$checkIf=$this->Teams->save($Teams);
+								if($checkIf) {
+									
+									foreach($team_members as $member_id) {
+										$content_array="";
+										$TeamMembers = $this->TeamMembers->newEntity();
+										$content_array['user_id']=$member_id;
+										$content_array['team_id']=$checkIf->id;
+										$TeamMembers = $this->TeamMembers->patchEntity($TeamMembers, $content_array);
+										$this->TeamMembers->save($TeamMembers);
+									}
+							
+									$status  = 200;
+									$success = true;
+									$return_data = "Team created successfully";	
+									$data = array("team_id"=>$checkIf->id);	
+								}
+							}
+							break;
+						default:
+							$status  = 400;
+							$success = false;
+							$return_data = "This method not allowed";
+							break;
+				}
+		} catch (Exception $e) {
+				$status  = 400;
+				$return_data= json_encode(array('exception_message'=>$e->getMessage()));
+				$success = false;
+		}
+		$this->response->type('json');
+		$json = json_encode(array('status'=>$status,'message'=>$return_data,'success'=>$success,'data'=>$data));
+		$this->response->statusCode($status);
+		$this->response->body($json);
+		
+	}
 	
 	public function search(){
 		

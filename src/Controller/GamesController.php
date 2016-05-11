@@ -26,17 +26,40 @@ class GamesController extends AppController
 	}
 
 	
-	public function index(){
+	public function index($user_id='',$search_keyword=''){
 		
 		try {
 			$this->autoRender = FALSE;	
 			$this->loadmodel('Games');
+			$this->loadmodel('Users');
 			$Games = $this->Games->newEntity();
 			$data="";			
 			switch (true) {
 						case $this->request->is('get'):
+							if($user_id!="") {
+								$return_data= $this->Users->find('all',['contain' => ['SportsPreferences']])->select()->where(['Users.id'=>$user_id])->first();
+								if($return_data) {
+									$sportids='';
+									foreach($return_data['sports_preferences'] as $sports_preferences) {
+										$sportids[]=$sports_preferences['sport_id'];
+									}
+									$whr=[];
+									$whr['Games.sport_id IN']=$sportids;
+									if(isset($search_keyword) && $search_keyword!='') {
+										$whr['Games.name LIKE']='%'.$search_keyword.'%';
+									}
+									$allGames = $this->Games->find('all',['contain' => ['Users', 'Sports']])->select(['Games.id','Games.name','Games.sport_id','Games.user_id','Games.game_type','Games.team_id','Games.date','Games.time','Games.latitude','Games.longitude','Games.address','Games.modified','Games.created','Users.first_name','Users.last_name','Users.email','Sports.name'])->where($whr);
+								} else {
+									$allGames="User not found";
+									$success=FALSE;
+									$status  = 200;
+								}
 							
-								$allGames = $this->Games->find('all',['contain' => ['Users', 'Sports']])->select(['Games.id','Games.sport_id','Games.user_id','Games.game_type','Games.team_id','Games.date','Games.time','Games.latitude','Games.longitude','Games.address','Games.modified','Games.created','Users.first_name','Users.last_name','Users.email','Sports.name']);
+								
+							} else {
+								$allGames = $this->Games->find('all',['contain' => ['Users', 'Sports']])->select(['Games.id','Games.sport_id','Games.name','Games.user_id','Games.game_type','Games.team_id','Games.date','Games.time','Games.latitude','Games.longitude','Games.address','Games.modified','Games.created','Users.first_name','Users.last_name','Users.email','Sports.name']);
+							}
+							
 								$status  = 200;
 								$success = true;
 								$return_data = $allGames;	
@@ -94,7 +117,7 @@ class GamesController extends AppController
 								$whr['Users.id']=$request_data['user_id'];
 							}
 							
-							$allGames = $this->Games->find('all',['contain' => ['Users', 'Sports']])->select(['Games.id','Games.sport_id','Games.user_id','Games.game_type','Games.team_id','Games.date','Games.time','Games.latitude','Games.longitude','Games.address','Games.modified','Games.created','Users.first_name','Users.last_name','Users.email','Sports.name'])->where($whr);
+							$allGames = $this->Games->find('all',['contain' => ['Users', 'Sports']])->select(['Games.id','Games.sport_id','Games.name','Games.user_id','Games.game_type','Games.team_id','Games.date','Games.time','Games.latitude','Games.longitude','Games.address','Games.modified','Games.created','Users.first_name','Users.last_name','Users.email','Sports.name'])->where($whr);
 								$status  = 200;
 								$success = true;
 								$return_data = $allGames;	
