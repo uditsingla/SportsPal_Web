@@ -88,6 +88,7 @@ class TeamsController extends AppController
 										$TeamMembers = $this->TeamMembers->newEntity();
 										$content_array['user_id']=$member_id;
 										$content_array['team_id']=$checkIf->id;
+										$content_array['status']='0';
 										$TeamMembers = $this->TeamMembers->patchEntity($TeamMembers, $content_array);
 										$this->TeamMembers->save($TeamMembers);
 									}
@@ -464,6 +465,96 @@ class TeamsController extends AppController
 		}
 		$this->response->type('json');
 		$json = json_encode(array('status'=>$status,'message'=>$return_data,'success'=>$success,'data'=>$data));
+		$this->response->statusCode($status);
+		$this->response->body($json);
+		
+	}
+	
+	
+	public function userTeamRequest($user_id){
+		
+		try {
+			$this->autoRender = FALSE;	
+			$this->loadmodel('Teams');
+			$this->loadmodel('TeamMembers');
+			$Teams = $this->Teams->newEntity();
+			$data="";			
+			switch (true) {
+						case $this->request->is('get'):
+							
+								$allTeamMembers = $this->TeamMembers->find('all')->select(['TeamMembers.id','TeamMembers.team_id','TeamMembers.user_id','TeamMembers.status'])->where(['TeamMembers.user_id'=>$user_id,'TeamMembers.status'=>'0']);
+								
+								$status  = 200;
+								$success = true;
+								$return_data = $allTeamMembers;	
+								
+							break;
+						case $this->request->is('post'):
+							$request_data = $this->request->input('json_decode', true);
+							if(!isset($user_id) OR !isset($request_data['request_id'])) {
+								$status  = 200;
+								$success = false;
+								$return_data = "Data Missing";
+							} else {
+									
+								 $memberDetails=$this->TeamMembers->find()->where(['id'=>$request_data['request_id'],'team_id'=>$request_data['team_id'],'status'=>'0'])->first();
+								if(count($memberDetails)==0) {
+									$status  = 200;
+									$success = false;
+									$return_data = "Request not found";	
+										
+								} else {
+									$content_array="";
+									$TeamMembers = $this->TeamMembers->newEntity();
+									$content_array['id']=$request_data['request_id'];
+									$content_array['team_id']=$request_data['team_id'];
+									$content_array['user_id']=$user_id;
+									$content_array['status'] = '1'; 
+
+									$TeamMembers = $this->TeamMembers->patchEntity($TeamMembers, $content_array);
+									$this->TeamMembers->save($TeamMembers);
+									
+									$status  = 200;
+									$success = true;
+									$return_data = "User status changed in team";	
+								}
+							}
+							break;
+						case $this->request->is('delete'):
+							$request_data = $this->request->input('json_decode', true);
+							if(!isset($user_id) OR !isset($request_data['request_id'])) {
+								$status  = 200;
+								$success = false;
+								$return_data = "Data Missing";
+							} else {
+									
+								 $memberDetails=$this->TeamMembers->find()->where(['id'=>$request_data['request_id'],'user_id'=>$user_id,'team_id'=>$request_data['team_id']])->first();
+								if(count($memberDetails)==0) {
+									$status  = 200;
+									$success = false;
+									$return_data = "Request not found";	
+										
+								} else {
+									$this->TeamMembers->deleteAll(['id'=>$request_data['request_id'],'user_id'=>$user_id,'team_id'=>$request_data['team_id']]);
+									$status  = 200;
+									$success = true;
+									$return_data = "Request deleted successfully";	
+								}
+							}
+							break;
+						default:
+							$status  = 400;
+							$success = false;
+							$return_data = "This method not allowed";
+							break;
+				}
+		} catch (Exception $e) {
+				$status  = 400;
+				$return_data= json_encode(array('exception_message'=>$e->getMessage()));
+				$success = false;
+		}
+		$this->response->type('json');
+		$json = json_encode(array('status'=>$status,'message'=>$return_data,'success'=>$success));
 		$this->response->statusCode($status);
 		$this->response->body($json);
 		
