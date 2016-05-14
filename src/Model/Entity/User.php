@@ -27,7 +27,8 @@ class User extends Entity
         'social_platform' => true,
         'social_id' => true,
         'latitude' => true,
-        'longitude' => true
+        'longitude' => true,
+        'bio' => true
     ];
     
     protected function _setPassword($value)

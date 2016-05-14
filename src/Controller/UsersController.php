@@ -121,7 +121,7 @@ class UsersController extends AppController
 							$success=FALSE;
 							$status  = 200;
 						} else {
-							$return_data= $this->Users->find('all',['contain' => ['UserFavLocations','Teams','FavouriteUsers','Games','SportsPreferences']])->select()->where(['Users.id'=>$user_id])->first();
+							$return_data= $this->Users->find('all',['contain' => ['UserFavLocations','Teams','FavouriteUsers','Games','SportsPreferences'=>['Sports']]])->select()->where(['Users.id'=>$user_id])->first();
 							if($return_data) {
 								unset($return_data->password);
 								$success=TRUE;
@@ -136,14 +136,27 @@ class UsersController extends AppController
 						break;
 					case $this->request->is('post'):
 						$request_data = $this->request->input('json_decode', true);
-						if(!isset($request_data['user_id']) OR $request_data['user_id']=="") {
+						if(!isset($user_id) OR $user_id=="") {
 							$return_data= "User Id required";
 							$success=FALSE;
 							$status  = 200;
 						} else {
-
+							
+							if(isset($request_data['image']) AND ($request_data['image'])!="") {
+								$img = $request_data['image'];
+								unset($request_data['image']);
+								$img = str_replace('data:image/png;base64,', '', $img);
+								$img = str_replace(' ', '+', $img);
+								$data = base64_decode($img);
+								$file = "images/" . uniqid() . '.png';
+								$success = file_put_contents($file, $data);
+								if($success) {
+									$request_data['image']=$file;
+								}
+							}
+							
 							$UserData = $this->Users->newEntity();
-							$request_data['id']=$request_data['user_id'];
+							$request_data['id']=$user_id;
 							$UserData = $this->Users->patchEntity($UserData, $request_data);
 							$checkIf=$this->Users->save($UserData);
 							if($checkIf) {
@@ -640,22 +653,6 @@ class UsersController extends AppController
 		$this->response->body($json);
     }
 	
-	function distance($lat1, $lon1, $lat2, $lon2, $unit="K") {
-
-	  $theta = $lon1 - $lon2;
-	  $dist = sin(deg2rad($lat1)) * sin(deg2rad($lat2)) +  cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * cos(deg2rad($theta));
-	  $dist = acos($dist);
-	  $dist = rad2deg($dist);
-	  $miles = $dist * 60 * 1.1515;
-	  $unit = strtoupper($unit);
-
-	  if ($unit == "K") {
-		  return ($miles * 1.609344);
-	  } else if ($unit == "N") {
-		  return ($miles * 0.8684);
-	  } else {
-		  return $miles;
-	  }
-	}
+	
 	
 }

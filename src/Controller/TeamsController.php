@@ -197,22 +197,62 @@ class TeamsController extends AppController
 		try {
 			$this->autoRender = FALSE;	
 			$this->loadmodel('Teams');
+			$this->loadmodel('Users');
 			$Teams = $this->Teams->newEntity();		
 					switch (true) {
 						case $this->request->is('post'):
 							$request_data = $this->request->input('json_decode', true);
 							$whr='';
-							if(isset($request_data['sport_id'])) {
-								$whr['Sports.id']=$request_data['sport_id'];  
+							if($request_data['user_id']!="") {
+								$return_data= $this->Users->find('all',['contain' => ['SportsPreferences']])->select()->where(['Users.id'=>$request_data['user_id']])->first();
+								if($return_data) {
+									$mainUserlat=$return_data->latitude;
+									$mainUserlong=$return_data->longitude;
+									$sportids='';
+									foreach($return_data['sports_preferences'] as $sports_preferences) {
+										$sportids[]=$sports_preferences['sport_id'];
+									}
+									$whr=[];
+									
+									if(isset($request_data['is_preferred']) AND ($request_data['is_preferred'])==1) {
+										$whr['Teams.sport_id IN']=$sportids;
+									}
+									if(isset($request_data['sports_id']) AND ($request_data['sports_id'])!='') {
+										$whr['Teams.sport_id']=$request_data['sports_id'];
+									}		
+									if(isset($request_data['keyword']) AND ($request_data['keyword'])!='' AND ($request_data['is_keyword'])!='' AND ($request_data['is_keyword'])==1) {
+										$whr['Teams.team_name LIKE']='%'.$request_data['keyword'].'%';
+									}
+									if(isset($request_data['is_creator']) AND ($request_data['is_creator'])==1) {
+										$whr['Teams.creator_id']=$request_data['user_id'];
+									}
+									$return_data = $this->Teams->find('all',['contain' => ['Users', 'Sports']])->select(['Teams.id','Teams.sport_id','Teams.team_name','Teams.team_type','Teams.members_limit','Teams.latitude','Teams.longitude','Teams.address','Teams.creator_id','Teams.created','Teams.modified','Users.first_name','Users.last_name','Users.email','Sports.name'])->where($whr);
+									/******************************************* Get NearBy *********************************/
+									if(isset($request_data['is_nearby']) AND ($request_data['is_nearby'])==1) {
+										$allGamesSet=[];
+										foreach($return_data as $allGame) {
+											
+											if(isset($allGame['latitude']) && isset($allGame['longitude']) && !empty($allGame['longitude']) && !empty($allGame['longitude'])) {
+												$allGame['distance']=$this->distance($mainUserlat,$mainUserlong,$allGame['latitude'],$allGame['longitude']);
+												if($allGame['distance']>50) {
+													continue;
+												}
+											} else {
+												$allGame['distance']=0;
+											}
+											$allGamesSet[]=$allGame;
+										}
+										$return_data=$allGamesSet;
+									}
+								/******************************************* End get NearBy ************************************/
+									$success = true;
+								} else {
+									$return_data="User not found";
+									$success=FALSE;
+								}
+								
 							}
-							if(isset($request_data['creator_id'])) {
-								$whr['Users.id']=$request_data['creator_id'];
-							}
-							
-							$allGames = $this->Teams->find('all',['contain' => ['Users', 'Sports']])->select(['Teams.id','Teams.sport_id','Teams.team_name','Teams.team_type','Teams.members_limit','Teams.latitude','Teams.longitude','Teams.address','Teams.creator_id','Teams.created','Teams.modified','Users.first_name','Users.last_name','Users.email','Sports.name'])->where($whr);
-								$status  = 200;
-								$success = true;
-								$return_data = $allGames;	
+								$status  = 200;	
 							break;
 						default:
 							$status  = 400;
