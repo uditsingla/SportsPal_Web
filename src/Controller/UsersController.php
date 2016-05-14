@@ -37,7 +37,7 @@ class UsersController extends AppController
 			switch (true) {
 					case $this->request->is('post'):
 						$request_data = $this->request->input('json_decode', true);
-						if(!isset($request_data['email']) OR !isset($request_data['password'])) {
+						if(!isset($request_data['email'])) {
 							$status  = 200;
 							$success = false;
 							$return_data = "Data Missing";
@@ -47,7 +47,12 @@ class UsersController extends AppController
 									$success = false;
 									$return_data = "Device type and token required";
 							} else {
-								$user = $this->Auth->identify();
+								if(isset($request_data['social_id']) AND ($request_data['social_id'])!='') {
+									$user= $this->Users->find('all')->select()->where(['Users.email'=>$request_data['email'],'Users.social_id'=>$request_data['social_id']])->first();
+									
+								} else {
+									$user = $this->Auth->identify();
+								}
 								if(!$user) {
 									$status  = 200;
 									$success = false;
@@ -55,6 +60,7 @@ class UsersController extends AppController
 								} else {
 									$status  = 200;
 									$success = true;
+									if(isset($user['password'])) { unset($user['password']); }
 									$return_data = $user;
 									$request_data['user_id']=$user['id'];
 									$userDevice = $this->UserDevices->newEntity();
@@ -203,27 +209,33 @@ class UsersController extends AppController
 				switch (true) {
 						case $this->request->is('post'):
 							$request_data = $this->request->input('json_decode', true);
-							if(!isset($request_data['email']) OR !isset($request_data['password'])) {
+							if(!isset($request_data['email'])) {
 								$status  = 200;
 								$success = false;
-								$return_data = "Data Missing";
+								$return_data = "Email Required";
 							} else {
-								$result = $this->Users->findByEmail($request_data['email']);	
-								if($result->count()==0) {
-									$user = $this->Users->patchEntity($user, $request_data);
-									if ($this->Users->save($user)) {
-										$status  = 200;
-										$success = true;
-										$return_data = "User registered successfully ";
+								if(!isset($request_data['password']) AND !isset($request_data['social_id'])) { 
+									$status  = 200;
+									$success = false;
+									$return_data = "Password or social id missing";
+								} else {
+									$result = $this->Users->findByEmail($request_data['email']);	
+									if($result->count()==0) {
+										$user = $this->Users->patchEntity($user, $request_data);
+										if ($this->Users->save($user)) {
+											$status  = 200;
+											$success = true;
+											$return_data = "User registered successfully ";
+										} else {
+											$status  = 200;
+											$success = false;
+											$return_data = "Error while adding user";
+										}
 									} else {
 										$status  = 200;
 										$success = false;
-										$return_data = "Error while adding user";
+										$return_data = "Email Already Exist";
 									}
-								} else {
-									$status  = 200;
-									$success = false;
-									$return_data = "Email Already Exist";
 								}
 							}
 							break;
@@ -654,5 +666,126 @@ class UsersController extends AppController
     }
 	
 	
-	
+	public function search(){
+		
+		 try { 
+			$this->autoRender = FALSE;	
+			$this->loadmodel('Users');		
+			switch (true) {
+					case $this->request->is('post'):
+						$request_data = $this->request->input('json_decode', true);
+							$whr='';
+							
+							$return_data=array();
+						if(!isset($request_data['user_id']) OR ($request_data['user_id'])=="") {
+							$return_data="User id required";
+							$success=FALSE;
+							$status  = 200;
+						} else {
+							$whr['Users.id !=']=$request_data['user_id'];
+							$return_data= $this->Users->find('all',['contain' => ['SportsPreferences']])->select(['latitude','longitude'])->where(['Users.id'=>$request_data['user_id']])->first();
+							if($return_data) {
+								$mainUserlat=$return_data->latitude;
+								$mainUserlong=$return_data->longitude;
+								
+								if(isset($request_data['is_nearby'])) {
+									$return_data = $this->Users->getNearbyUsers($request_data['user_id'],$request_data['sport_id'],$return_data->latitude,$return_data->longitude);
+								
+										foreach($return_data as $return) {
+											$uids[]=$return['id'];
+										}
+									if(count($uids)>0) { 
+										$uid=implode($uids,",");
+										
+											if(isset($request_data['is_keyword']) AND $request_data['is_keyword']==1 AND isset($request_data['keyword']) AND ($request_data['keyword']!='')) {
+												$whr['OR']['Users.first_name LIKE']="%".$request_data['keyword']."%";
+												$whr['OR']['Users.last_name LIKE']="%".$request_data['keyword']."%";
+											}
+										if($request_data['sport_id']!="") { 
+										
+											$whr['Users.id IN']=$uids;
+											
+											$return_data=$this->Users->find('all',['contain' => ['Teams','Games','SportsPreferences'=>['conditions' => array('SportsPreferences.sport_id' => $request_data['sport_id'])]]])->where([$whr]);
+										} else {
+											$return_data=$this->Users->find('all',['contain' => ['Teams','Games','SportsPreferences']])->where(['Users.id IN'=>$uids]);
+										}	
+										$allUsers=[];
+										foreach($return_data as $singleUser) {
+											if(isset($request_data['sport_id']) AND $request_data['sport_id']!="") { 
+												if(count($singleUser['sports_preferences'])==0) {
+													continue;
+												}
+											}
+											unset($singleUser['password']);
+											if(isset($singleUser['latitude']) && isset($singleUser['longitude']) && !empty($singleUser['longitude']) && !empty($singleUser['longitude'])) {
+												$singleUser['distance']=$this->distance($mainUserlat,$mainUserlong,$singleUser['latitude'],$singleUser['longitude']);
+											} else {
+												$singleUser['distance']=0;
+											}
+											$allUsers[]=$singleUser;
+										}
+										$return_data=$allUsers;
+									} else {
+										$return_data=array();
+									}
+									
+								} else {
+										
+											if(isset($request_data['is_keyword']) AND $request_data['is_keyword']==1 AND isset($request_data['keyword']) AND ($request_data['keyword']!='')) {
+												$whr['OR']['Users.first_name LIKE']="%".$request_data['keyword']."%";
+												$whr['OR']['Users.last_name LIKE']="%".$request_data['keyword']."%";
+											}
+										if(isset($request_data['sport_id']) AND $request_data['sport_id']!="") { 	
+											$return_data=$this->Users->find('all',['contain' => ['Teams','Games','SportsPreferences'=>['Sports','conditions' => array('SportsPreferences.sport_id' => $request_data['sport_id'])]]])->where([$whr]);
+										} else {
+											$return_data=$this->Users->find('all',['contain' => ['Teams','Games','SportsPreferences'=>['Sports']]])->where([$whr]);
+										}	
+										$allUsers=[];
+										foreach($return_data as $singleUser) {
+											if(isset($request_data['sport_id']) AND $request_data['sport_id']!="") { 
+												if(count($singleUser['sports_preferences'])==0) {
+													continue;
+												}
+											}
+											unset($singleUser['password']);
+											if(isset($singleUser['latitude']) && isset($singleUser['longitude']) && !empty($singleUser['longitude']) && !empty($singleUser['longitude'])) {
+												$singleUser['distance']=$this->distance($mainUserlat,$mainUserlong,$singleUser['latitude'],$singleUser['longitude']);
+											} else {
+												$singleUser['distance']=0;
+											}
+											$allUsers[]=$singleUser;
+										}
+										$return_data=$allUsers;
+									
+								}
+								
+								
+				 
+				 
+								$success=TRUE;
+								$status  = 200;
+							} else {
+								$return_data="User not found";
+								$success=FALSE;
+								$status  = 200;
+							}
+						}
+						break;
+					default:
+						$status  = 400;
+						$success = false;
+						$return_data = "This method not allowed";
+						break;
+			}
+		} catch (Exception $e) {
+				$status  = 400;
+				$return_data= json_encode(array('exception_message'=>$e->getMessage()));
+				$success = false;
+		}
+		$this->response->type('json');
+		$json = json_encode(array('status'=>$status,'message'=>$return_data,'success'=>$success));
+		$this->response->statusCode($status);
+		$this->response->body($json);
+		
+	}
 }
