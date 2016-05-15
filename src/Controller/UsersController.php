@@ -705,13 +705,13 @@ class UsersController extends AppController
 												$whr['OR']['Users.first_name LIKE']="%".$request_data['keyword']."%";
 												$whr['OR']['Users.last_name LIKE']="%".$request_data['keyword']."%";
 											}
-										if(isset($request_data['sport_id']) AND $request_data['sport_id']!="") { 
-										
 											$whr['Users.id IN']=$uids;
-											
+										if(isset($request_data['sport_id']) AND $request_data['sport_id']!="") { 
+
 											$return_data=$this->Users->find('all',['contain' => ['Teams','Games','SportsPreferences'=>['conditions' => array('SportsPreferences.sport_id' => $request_data['sport_id'])]]])->where([$whr]);
 										} else {
-											$return_data=$this->Users->find('all',['contain' => ['Teams','Games','SportsPreferences']])->where(['Users.id IN'=>$uids]);
+											
+											$return_data=$this->Users->find('all',['contain' => ['Teams','Games','SportsPreferences']])->where([$whr]);
 										}	
 										$allUsers=[];
 										foreach($return_data as $singleUser) {
