@@ -620,12 +620,15 @@ class UsersController extends AppController
 										$whr='';
 										$whr['Users.id IN']=$uids;
 										
-										$return_data=$this->Users->find('all',['contain' => ['Teams','Games','SportsPreferences'=>['conditions' => array('SportsPreferences.sport_id' => $sport_id)]]])->where([$whr]);
+										$return_data=$this->Users->find('all',['contain' => ['Teams','Games','SportsPreferences'=>['Sports','conditions' => array('SportsPreferences.sport_id' => $sport_id)]]])->where([$whr]);
 									} else {
-										$return_data=$this->Users->find('all',['contain' => ['Teams','Games','SportsPreferences']])->where(['Users.id IN'=>$uids]);
+										$return_data=$this->Users->find('all',['contain' => ['Teams','Games','SportsPreferences'=>['Sports']]])->where(['Users.id IN'=>$uids]);
 									}	
 									$allUsers=[];
 									foreach($return_data as $singleUser) {
+										if($sport_id!="" AND count($singleUser['sports_preferences'])==0) {
+													continue;
+												}
 										unset($singleUser['password']);
 										if(isset($singleUser['latitude']) && isset($singleUser['longitude']) && !empty($singleUser['longitude']) && !empty($singleUser['longitude'])) {
 											$singleUser['distance']=$this->distance($mainUserlat,$mainUserlong,$singleUser['latitude'],$singleUser['longitude']);
