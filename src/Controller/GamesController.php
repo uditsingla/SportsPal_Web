@@ -40,6 +40,8 @@ class GamesController extends AppController
 								$return_data= $this->Users->find('all',['contain' => ['SportsPreferences']])->select()->where(['Users.id'=>$user_id])->first();
 									if($return_data) {
 										$sportids='';
+										$mainUserlat=$return_data->latitude;
+										$mainUserlong=$return_data->longitude;
 										foreach($return_data['sports_preferences'] as $sports_preferences) {
 											$sportids[]=$sports_preferences['sport_id'];
 										}
@@ -49,6 +51,16 @@ class GamesController extends AppController
 											$whr['Games.name LIKE']='%'.$search_keyword.'%';
 										}
 										$allGames = $this->Games->find('all',['contain' => ['Users', 'Sports']])->select(['Games.id','Games.name','Games.sport_id','Games.user_id','Games.game_type','Games.team_id','Games.date','Games.time','Games.latitude','Games.longitude','Games.address','Games.modified','Games.created','Users.first_name','Users.last_name','Users.email','Sports.name'])->where($whr);
+										$allGamesSet=array();
+										foreach($allGames as $allGame) {
+											
+											if(isset($allGame['latitude']) && isset($allGame['longitude']) && !empty($allGame['longitude']) && !empty($allGame['longitude'])) {
+												$allGame['distance']=$this->distance($mainUserlat,$mainUserlong,$allGame['latitude'],$allGame['longitude']);
+												
+											} 
+											$allGamesSet[]=$allGame;
+										}
+										$allGames = $allGamesSet;
 										$success = true;
 									} else {
 										$allGames="User not found";
