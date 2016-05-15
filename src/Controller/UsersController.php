@@ -689,7 +689,11 @@ class UsersController extends AppController
 								$mainUserlong=$return_data->longitude;
 								
 								if(isset($request_data['is_nearby'])) {
-									$return_data = $this->Users->getNearbyUsers($request_data['user_id'],$request_data['sport_id'],$return_data->latitude,$return_data->longitude);
+									$sport_id='';
+									if(isset($request_data['sport_id'])) {
+										$sport_id=$request_data['sport_id'];
+									}
+									$return_data = $this->Users->getNearbyUsers($request_data['user_id'],$sport_id,$return_data->latitude,$return_data->longitude);
 								
 										foreach($return_data as $return) {
 											$uids[]=$return['id'];
@@ -701,7 +705,7 @@ class UsersController extends AppController
 												$whr['OR']['Users.first_name LIKE']="%".$request_data['keyword']."%";
 												$whr['OR']['Users.last_name LIKE']="%".$request_data['keyword']."%";
 											}
-										if($request_data['sport_id']!="") { 
+										if(isset($request_data['sport_id']) AND $request_data['sport_id']!="") { 
 										
 											$whr['Users.id IN']=$uids;
 											
