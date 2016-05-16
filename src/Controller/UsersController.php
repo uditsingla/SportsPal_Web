@@ -608,7 +608,7 @@ class UsersController extends AppController
 								$mainUserlat=$return_data->latitude;
 								$mainUserlong=$return_data->longitude;
 								$return_data = $this->Users->getNearbyUsers($user_id,$sport_id,$return_data->latitude,$return_data->longitude);
-								
+								$uids=array();
 								foreach($return_data as $return) {
 									$uids[]=$return['id'];
 								}
@@ -711,10 +711,10 @@ class UsersController extends AppController
 											$whr['Users.id IN']=$uids;
 										if(isset($request_data['sport_id']) AND $request_data['sport_id']!="") { 
 
-											$return_data=$this->Users->find('all',['contain' => ['Teams','Games','SportsPreferences'=>['conditions' => array('SportsPreferences.sport_id' => $request_data['sport_id'])]]])->where([$whr]);
+											$return_data=$this->Users->find('all',['contain' => ['Teams','Games','SportsPreferences'=>['Sports','conditions' => array('SportsPreferences.sport_id' => $request_data['sport_id'])]]])->where([$whr]);
 										} else {
 											
-											$return_data=$this->Users->find('all',['contain' => ['Teams','Games','SportsPreferences']])->where([$whr]);
+											$return_data=$this->Users->find('all',['contain' => ['Teams','Games','SportsPreferences'=>['Sports']]])->where([$whr]);
 										}	
 										$allUsers=[];
 										foreach($return_data as $singleUser) {
