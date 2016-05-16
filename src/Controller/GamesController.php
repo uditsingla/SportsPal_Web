@@ -148,13 +148,13 @@ class GamesController extends AppController
 									}
 									$allGames = $this->Games->find('all',['contain' => ['Users', 'Sports']])->select(['Games.id','Games.name','Games.sport_id','Games.user_id','Games.game_type','Games.team_id','Games.date','Games.time','Games.latitude','Games.longitude','Games.address','Games.modified','Games.created','Users.first_name','Users.last_name','Users.email','Sports.name'])->where($whr);
 									/******************************************* Get NearBy *********************************/
-									if(isset($request_data['is_nearby']) AND ($request_data['is_nearby'])==1) {
+									
 										$allGamesSet=[];
 										foreach($allGames as $allGame) {
 											
 											if(isset($allGame['latitude']) && isset($allGame['longitude']) && !empty($allGame['longitude']) && !empty($allGame['longitude'])) {
 												$allGame['distance']=$this->distance($mainUserlat,$mainUserlong,$allGame['latitude'],$allGame['longitude']);
-												if($allGame['distance']>50) {
+												if($allGame['distance']>50 AND isset($request_data['is_nearby']) AND ($request_data['is_nearby'])==1) {
 													continue;
 												}
 											} else {
@@ -163,7 +163,7 @@ class GamesController extends AppController
 											$allGamesSet[]=$allGame;
 										}
 										$allGames=$allGamesSet;
-									}
+									
 								/******************************************* End get NearBy ************************************/
 									$success = true;
 								} else {
