@@ -28,6 +28,7 @@ class User extends Entity
         'social_id' => true,
         'latitude' => true,
         'longitude' => true,
+        'address' => true,
         'bio' => true
     ];
     

@@ -195,4 +195,72 @@ class GamesController extends AppController
 		$this->response->body($json);
 		
 	}
+	
+	
+	public function singlegame($game_id,$user_id=''){
+		
+		try {
+			$this->autoRender = FALSE;	
+			$this->loadmodel('Games');
+			$this->loadmodel('Users');
+			$Games = $this->Games->newEntity();
+			$data="";			
+			switch (true) {
+						case $this->request->is('get'):
+								if(isset($game_id) && $game_id!=null) {
+									if($user_id!="") {
+										$return_data= $this->Users->find('all',['contain' => ['SportsPreferences']])->select()->where(['Users.id'=>$user_id])->first();
+										if($return_data) {
+											$sportids='';
+											$mainUserlat=$return_data->latitude;
+											$mainUserlong=$return_data->longitude;
+											
+											$allGames = $this->Games->find('all',['contain' => ['Users', 'Sports']])->select(['Games.id','Games.name','Games.sport_id','Games.user_id','Games.game_type','Games.team_id','Games.date','Games.time','Games.latitude','Games.longitude','Games.address','Games.modified','Games.created','Users.first_name','Users.last_name','Users.email','Sports.name'])->where(['Games.id'=>$game_id])->first();
+											
+											if(count($allGames)>0) {
+												if(isset($allGames['latitude']) && isset($allGames['longitude']) && !empty($allGames['longitude']) && !empty($allGames['longitude'])) {
+													$allGames['distance']=$this->distance($mainUserlat,$mainUserlong,$allGames['latitude'],$allGames['longitude']);
+													
+												} 
+											} else {
+												$allGames=array();
+											}
+											
+											
+											$success = true;
+										} else {
+											$allGames="User not found";
+											$success=FALSE;
+										}
+									} else {
+										$allGames = $this->Games->find('all',['contain' => ['Users', 'Sports']])->select(['Games.id','Games.sport_id','Games.name','Games.user_id','Games.game_type','Games.team_id','Games.date','Games.time','Games.latitude','Games.longitude','Games.address','Games.modified','Games.created','Users.first_name','Users.last_name','Users.email','Sports.name'])->where(['Games.id'=>$game_id])->first();
+										$success = true;
+									}
+									
+									$status  = 200;
+									$return_data = $allGames;	
+								} else {
+									$status  = 200;
+									$success = false;
+									$return_data = "Game Id required";	
+								}
+							break;
+						default:
+							$status  = 400;
+							$success = false;
+							$return_data = "This method not allowed";
+							break;
+				}
+		} catch (Exception $e) {
+				$status  = 400;
+				$return_data= json_encode(array('exception_message'=>$e->getMessage()));
+				$success = false;
+		}
+		$this->response->type('json');
+		$json = json_encode(array('status'=>$status,'message'=>$return_data,'success'=>$success,'data'=>$data));
+		$this->response->statusCode($status);
+		$this->response->body($json);
+		
+	}
+	
 }

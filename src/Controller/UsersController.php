@@ -697,7 +697,7 @@ class UsersController extends AppController
 										$sport_id=$request_data['sport_id'];
 									}
 									$return_data = $this->Users->getNearbyUsers($request_data['user_id'],$sport_id,$return_data->latitude,$return_data->longitude);
-								
+										$uids=array();
 										foreach($return_data as $return) {
 											$uids[]=$return['id'];
 										}
