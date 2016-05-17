@@ -263,4 +263,166 @@ class GamesController extends AppController
 		
 	}
 	
+	
+	public function challenge($game_id=null){
+		
+		try {
+			$this->autoRender = FALSE;	
+			$this->loadmodel('Games');
+			$this->loadmodel('GameChallenges');
+			$Games = $this->Games->newEntity();
+			$data="";			
+			switch (true) {
+						case $this->request->is('get'):
+								if($game_id!='') {
+								
+									$allChallenge = $this->GameChallenges->find('all')->where(['GameChallenges.game_id'=>$game_id]);
+									$success = true;
+								} else {
+									$allChallenge="Game id required";
+									$success = false;
+								}
+								
+								$status  = 200;
+								$return_data = $allChallenge;	
+								
+							break;
+						case $this->request->is('post'):
+							$request_data = $this->request->input('json_decode', true); 
+							if(!isset($game_id) OR empty($game_id) OR !isset($request_data['user_id']) OR empty($request_data['user_id'])) {
+								$status  = 200;
+								$success = false;
+								$return_data = "Data Missing";
+							} else {
+								$challengeDetails=$this->Games->find()->where(['id'=>$game_id])->first();
+								if(count($challengeDetails)==0) {
+									$status  = 200;
+									$success = false;
+									$return_data = "Game not found";	
+										
+								} else {
+									$content_array="";
+									$GameChallenges = $this->GameChallenges->newEntity();
+									$content_array['game_id']=$game_id;
+									$content_array['user_id']=$request_data['user_id'];
+									$content_array['team_id']=(isset($request_data['challenge_to'])?$request_data['challenge_to']:'0');
+									$content_array['status']="0";
+									
+									$TeamChallenges = $this->GameChallenges->patchEntity($GameChallenges, $content_array);
+									$ifChanllenge = $this->GameChallenges->save($GameChallenges);
+									if($ifChanllenge) {
+										$status  = 200;
+										$success = true;
+										$return_data = "Challenge set";	
+										$data['challenge_id'] = $ifChanllenge->id;	
+									} else {
+										$status  = 200;
+										$success = false;
+										$return_data = "Error";
+									}
+								}
+							}
+							break;
+						case $this->request->is('delete'):
+							$request_data = $this->request->input('json_decode', true);
+							if(!isset($request_data['challenge_id'])) {
+								$status  = 200;
+								$success = false;
+								$return_data = "Data Missing";
+							} else {
+									
+								 $challengeDetails=$this->GameChallenges->find()->where(['id'=>$request_data['challenge_id']])->first();
+								if(count($challengeDetails)==0) {
+									$status  = 200;
+									$success = false;
+									$return_data = "Request not found";	
+										
+								} else {
+									$this->GameChallenges->deleteAll(['id'=>$request_data['challenge_id']]);
+									$status  = 200;
+									$success = true;
+									$return_data = "Challenge deleted successfully";	
+								}
+							}
+							break;
+						default:
+							$status  = 400;
+							$success = false;
+							$return_data = "This method not allowed";
+							break;
+				}
+		} catch (Exception $e) {
+				$status  = 400;
+				$return_data= json_encode(array('exception_message'=>$e->getMessage()));
+				$success = false;
+		}
+		$this->response->type('json');
+		$json = json_encode(array('status'=>$status,'message'=>$return_data,'success'=>$success,'data'=>$data));
+		$this->response->statusCode($status);
+		$this->response->body($json);
+		
+	}
+	
+	
+	public function acceptchallenge(){
+		
+		try {
+			$this->autoRender = FALSE;	
+			$this->loadmodel('Games');
+			$this->loadmodel('GameChallenges');
+			$Games = $this->Games->newEntity();
+			$data="";			
+			switch (true) {
+						case $this->request->is('post'):
+							$request_data = $this->request->input('json_decode', true); 
+							if(!isset($request_data['challenge_id']) OR empty($request_data['challenge_id']) OR !isset($request_data['user_id']) OR empty($request_data['user_id'])) {
+								$status  = 200;
+								$success = false;
+								$return_data = "Data Missing";
+							} else {
+								$challengeDetails=$this->GameChallenges->find()->where(['id'=>$request_data['challenge_id']])->first();
+								if(count($challengeDetails)==0) {
+									$status  = 200;
+									$success = false;
+									$return_data = "Game not found";	
+										
+								} else {
+									$content_array="";
+									$GameChallenges = $this->GameChallenges->newEntity();
+									$content_array['id']=$request_data['challenge_id'];
+									$content_array['status']="1";
+									
+									$TeamChallenges = $this->GameChallenges->patchEntity($GameChallenges, $content_array);
+									$ifChanllenge = $this->GameChallenges->save($GameChallenges);
+									if($ifChanllenge) {
+										$status  = 200;
+										$success = true;
+										$return_data = "Challenge accepted";	
+										$data['challenge_id'] = $ifChanllenge->id;	
+									} else {
+										$status  = 200;
+										$success = false;
+										$return_data = "Error";
+									}
+								}
+							}
+							break;
+						default:
+							$status  = 400;
+							$success = false;
+							$return_data = "This method not allowed";
+							break;
+				}
+		} catch (Exception $e) {
+				$status  = 400;
+				$return_data= json_encode(array('exception_message'=>$e->getMessage()));
+				$success = false;
+		}
+		$this->response->type('json');
+		$json = json_encode(array('status'=>$status,'message'=>$return_data,'success'=>$success,'data'=>$data));
+		$this->response->statusCode($status);
+		$this->response->body($json);
+		
+	}
+	
 }
