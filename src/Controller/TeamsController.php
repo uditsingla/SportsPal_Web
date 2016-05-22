@@ -524,7 +524,7 @@ class TeamsController extends AppController
 			switch (true) {
 						case $this->request->is('get'):
 							
-								$allTeamMembers = $this->TeamMembers->find('all',['contain' => ['Teams'=>['Users']]])->autoFields(true)->select(['TeamMembers.id','TeamMembers.team_id','TeamMembers.user_id','TeamMembers.status','Teams.team_name'])->where(['TeamMembers.user_id'=>$user_id,'TeamMembers.status'=>'0']);
+								$allTeamMembers = $this->TeamMembers->find('all',['contain' => ['Teams'=>['Users','Sports']]])->autoFields(true)->select(['TeamMembers.id','TeamMembers.team_id','TeamMembers.user_id','TeamMembers.status','Teams.team_name'])->where(['TeamMembers.user_id'=>$user_id,'TeamMembers.status'=>'0']);
 								
 								$status  = 200;
 								$success = true;

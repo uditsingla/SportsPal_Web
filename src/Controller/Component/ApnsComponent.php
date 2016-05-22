@@ -1,6 +1,10 @@
 <?php
 
-class APNSComponent extends Component {
+namespace App\Controller\Component;
+use Cake\Controller\Component;
+use Cake\ORM\TableRegistry;
+
+class ApnsComponent extends Component {
 
     /**
      * APNS settings
