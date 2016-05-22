@@ -29,4 +29,12 @@ class TeamsTable extends Table
 		$this->belongsTo('Sports',['foreignKey' => 'sport_id']);
 		$this->hasMany('TeamMembers',['foreignKey' => 'team_id']);
     }
+	
+	public function getTeamdetails($team_id){	
+		if($team_id) { 
+			return $this->findById($team_id)->select(['id','team_name'])->first();
+		} else {
+			return false;
+		}
+	}
 }

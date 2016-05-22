@@ -6,11 +6,12 @@ use Cake\ORM\Query;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
+use Cake\Datasource\ConnectionManager;
 
 /**
- * TeamMembers Model
+ * Notifications Model
  */
-class TeamMembersTable extends Table
+class NotificationsTable extends Table
 {
 
     /**
@@ -21,11 +22,17 @@ class TeamMembersTable extends Table
      */
     public function initialize(array $config)
     {
-        $this->table('team_members');
+        $this->table('notifications');
         $this->displayField('id');
         $this->primaryKey('id');
 		$this->addBehavior('Timestamp');
-		$this->belongsTo('Users',['foreignKey' => 'user_id']);
-		$this->belongsTo('Teams',['foreignKey' => 'team_id']);
     }
+	
+	public function getNotifications() {	
+		return $this->find('all');
+	}
+	
+	public function deleteNotifications($ids) {	
+		return $this->deleteAll(['id IN' => $ids]);
+	}
 }

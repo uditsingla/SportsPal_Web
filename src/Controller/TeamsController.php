@@ -16,6 +16,7 @@ class TeamsController extends AppController
 		parent::initialize();
 		$this->loadComponent('RequestHandler');
 		//$this->RequestHandler->config('inputTypeMap.json', ['json_decode', true]);
+		$this->loadComponent('Notifications');
    
 	}
     
@@ -91,6 +92,7 @@ class TeamsController extends AppController
 										$content_array['status']='0';
 										$TeamMembers = $this->TeamMembers->patchEntity($TeamMembers, $content_array);
 										$this->TeamMembers->save($TeamMembers);
+										$this->Notifications->notifyMembers($member_id,$checkIf->id,$request_data['creator_id']);
 									}
 							
 									$status  = 200;
@@ -522,7 +524,7 @@ class TeamsController extends AppController
 			switch (true) {
 						case $this->request->is('get'):
 							
-								$allTeamMembers = $this->TeamMembers->find('all')->select(['TeamMembers.id','TeamMembers.team_id','TeamMembers.user_id','TeamMembers.status'])->where(['TeamMembers.user_id'=>$user_id,'TeamMembers.status'=>'0']);
+								$allTeamMembers = $this->TeamMembers->find('all',['contain' => ['Teams'=>['Users']]])->autoFields(true)->select(['TeamMembers.id','TeamMembers.team_id','TeamMembers.user_id','TeamMembers.status','Teams.team_name'])->where(['TeamMembers.user_id'=>$user_id,'TeamMembers.status'=>'0']);
 								
 								$status  = 200;
 								$success = true;
@@ -537,7 +539,7 @@ class TeamsController extends AppController
 								$return_data = "Data Missing";
 							} else {
 									
-								 $memberDetails=$this->TeamMembers->find()->where(['id'=>$request_data['request_id'],'team_id'=>$request_data['team_id'],'status'=>'0'])->first();
+								 $memberDetails=$this->TeamMembers->find()->where(['id'=>$request_data['request_id'],'team_id'=>$request_data['team_id'],'user_id'=>$user_id,'status'=>'0'])->first();
 								if(count($memberDetails)==0) {
 									$status  = 200;
 									$success = false;
@@ -553,6 +555,15 @@ class TeamsController extends AppController
 
 									$TeamMembers = $this->TeamMembers->patchEntity($TeamMembers, $content_array);
 									$this->TeamMembers->save($TeamMembers);
+									
+									/************************ Notifications **************************************/
+										
+										$teamDetails=$this->Teams->find()->where(['id'=>$request_data['team_id']])->first();
+										if(count($teamDetails)!=0) {
+											$this->Notifications->notifyAdmin($teamDetails['creator_id'],$request_data['team_id'],$user_id,'accepted');
+										}
+										
+									/************************ End ***************************/
 									
 									$status  = 200;
 									$success = true;
@@ -579,6 +590,15 @@ class TeamsController extends AppController
 									$status  = 200;
 									$success = true;
 									$return_data = "Request deleted successfully";	
+									
+									/************************ Notifications **************************************/
+										
+										$teamDetails=$this->Teams->find()->where(['id'=>$request_data['team_id']])->first();
+										if(count($teamDetails)!=0) {
+											$this->Notifications->notifyAdmin($teamDetails['creator_id'],$request_data['team_id'],$user_id,'rejected');
+										}
+										
+									/************************ End ***************************/
 								}
 							}
 							break;
@@ -599,5 +619,6 @@ class TeamsController extends AppController
 		$this->response->body($json);
 		
 	}
+	
 	
 }

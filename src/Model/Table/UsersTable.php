@@ -32,6 +32,7 @@ class UsersTable extends Table
 		$this->hasMany('TeamMembers',['foreignKey' => 'user_id']);
 		$this->hasMany('Teams',['foreignKey' => 'creator_id']);
 		$this->hasMany('SportsPreferences',['foreignKey' => 'user_id']);
+		$this->hasMany('UserDevices',['foreignKey' => 'user_id']);
     }
 
     public function buildRules(RulesChecker $rules)
@@ -44,5 +45,21 @@ class UsersTable extends Table
 		$conn = ConnectionManager::get('default');
 		$data = $conn->execute("SELECT `id`,`first_name`,`last_name`,`email`,`dob`,`gender`,`image`,`latitude`,`longitude`, SQRT(POW(69.1 * (latitude - ".$latitude."), 2) + POW(69.1 * (".$longitude." - longitude) * COS(latitude / 57.3), 2)) AS distance FROM users WHERE `id`!=".$user_id." HAVING distance < 50 ORDER BY distance");
 		return $data->fetchAll('assoc');
+	}
+	
+	public function getUserdetails($user_id){	
+		if($user_id) { 
+			return $this->findById($user_id)->select(['id','first_name','last_name','image'])->first();
+		} else {
+			return false;
+		}
+	}
+	
+	public function fetchUserDetails($user_id){	
+		if($user_id) { 
+			return $return_data=$this->find('all',['contain' => ['UserDevices']])->where(['id'=>$user_id]);
+		} else {
+			return false;
+		}
 	}
 }
