@@ -57,7 +57,7 @@ class UsersTable extends Table
 	
 	public function fetchUserDetails($user_id){	
 		if($user_id) { 
-			return $return_data=$this->find('all',['contain' => ['UserDevices']])->where(['id'=>$user_id]);
+			return $return_data=$this->find('all',['contain' => ['UserDevices']])->where(['id'=>$user_id])->first();
 		} else {
 			return false;
 		}

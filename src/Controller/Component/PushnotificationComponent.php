@@ -3,7 +3,6 @@
 namespace App\Controller\Component;
 use Cake\Controller\Component;
 use Cake\ORM\TableRegistry;
-use Cake\Controller\Component;
 
 class PushnotificationComponent extends Component {
     
@@ -19,11 +18,11 @@ class PushnotificationComponent extends Component {
      * @return boolean $response
      */
     public function sendMessage($type, $deviceToken, $message, $payLoadData = array()) {
-        
+      
         $result = FALSE;
         switch ($type) {
-            case 'ios':
-        
+            case DEVICE_TYPE_IOS:
+       
                 // configure settings..
                 $params = array(
                     'gateway' => APPLE_GATEWAY_URL,
@@ -36,11 +35,11 @@ class PushnotificationComponent extends Component {
                 $result = $this->Apns->sendPushMessage($deviceToken, $params, $payLoadData);
                 
                 break;
-            case 'Android':
+            case DEVICE_TYPE_ANDROID:
                 
                 $params['registrationIds'] = array($deviceToken);
                 // send push notification via gcm
-                $result = $this->C2DM->sendMessage('AIzaSyBXCTk5VPL1NFwQIxvj2kPJx54L_jb9OdE', $params['registrationIds'], $message, $payLoadData);
+                $result = $this->C2DM->sendMessage(GCM_API_KEY, $params['registrationIds'], $message, $payLoadData);
                 
                 break;
             default:

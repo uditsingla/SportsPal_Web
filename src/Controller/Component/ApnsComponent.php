@@ -22,7 +22,7 @@ class ApnsComponent extends Component {
     private $tag = 'apns';
 
     public function sendPushMessage($deviceToken, $config = array(), $extra = array()) {
-        
+       
         if (!isset($config['message'])) {
             return false;
         }
@@ -62,7 +62,7 @@ class ApnsComponent extends Component {
         
         // Send it to the server
         $result = fwrite($fp, $msg, strlen($msg));
-        
+        print_r($result); die;
         // Close the connection to the server
         fclose($fp);
         

@@ -3,6 +3,9 @@
 namespace App\Shell;
 
 use Cake\Console\Shell;
+use Cake\Controller\Component;
+use Cake\Controller\ComponentRegistry;
+use App\Controller\Component\PushnotificationComponent; 
 
 class PushnotificationsShell extends Shell {
 
@@ -11,6 +14,7 @@ class PushnotificationsShell extends Shell {
         parent::initialize();
         $this->loadModel('Notifications');
         $this->loadModel('Users');
+		$this->Pushnotification = new PushnotificationComponent(new ComponentRegistry());
     }
 
     /**
@@ -34,7 +38,7 @@ class PushnotificationsShell extends Shell {
                 // Process each notification entry
                 foreach ($notifications_data as $notification) {
                     // Pick up the settings for the user is not same as the previous notification user
-                    
+                   
                     if($notification['user_id']!='') {
                         // Reset user's devices and notification settings
                         $user_notification_setting = array();
@@ -45,8 +49,8 @@ class PushnotificationsShell extends Shell {
                         $user_details = $this->Users->fetchUserDetails($user_id);
 						
                         if($user_details AND count($user_details)==1) {
-                         if(isset($user_details->UserDevices) && !empty($user_details->UserDevices)) {
-                              $user_devices = $user_details->UserDevices;
+                         if(isset($user_details->user_devices) && !empty($user_details->user_devices)) {
+                              $user_devices = $user_details->user_devices;
                           }
 						}
                     }
@@ -67,7 +71,7 @@ class PushnotificationsShell extends Shell {
                                     // Send Push notification to all devices of user
                                    foreach($user_devices as $device) {
                                        // Send push notification
-                                       //$push_notification = $this->Pushnotification->sendMessage($device['device_type'], $device['device_token'], $notification['message'], $notification['payload']);
+                                       $push_notification = $this->Pushnotification->sendMessage($device['device_type'], $device['device_token'], $notification['message'], $notification['payload']);
                                     
                                     }
                                 }
@@ -78,11 +82,11 @@ class PushnotificationsShell extends Shell {
                 }
                     
             }
-    
+   
                 // Check if there were some processed entries
                 if(count($processed_notifications) > 0) {
                     // Delete the processed entries from dataase
-                    $delete_records = $this->Notifications->deleteNotifications($processed_notifications);
+                    //$delete_records = $this->Notifications->deleteNotifications($processed_notifications);
                 }
         die;
     }
