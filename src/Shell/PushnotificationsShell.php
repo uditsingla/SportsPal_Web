@@ -82,7 +82,7 @@ class PushnotificationsShell extends Shell {
                 }
                     
             }
-   
+   print_r($processed_notifications); die;
                 // Check if there were some processed entries
                 if(count($processed_notifications) > 0) {
                     // Delete the processed entries from dataase
