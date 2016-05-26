@@ -11,6 +11,7 @@ class C2DMComponent extends Component {
     public function sendMessage($apiKey, $registrationIDs, $message, $extra = array()) {
 
         // Set POST variables
+		
         $url = 'https://android.googleapis.com/gcm/send';
 
         $fields = array(
@@ -37,7 +38,7 @@ class C2DMComponent extends Component {
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($fields));
 
         // Execute post
@@ -45,7 +46,7 @@ class C2DMComponent extends Component {
 
         // Close connection
         curl_close($ch);
-        
+      
         /*$this->log(array( 'response' => $result, 'request' => $fields, ), $this->TAG);*/
         $response = json_decode($result, true);
         

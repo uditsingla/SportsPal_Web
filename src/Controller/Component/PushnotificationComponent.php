@@ -20,6 +20,7 @@ class PushnotificationComponent extends Component {
     public function sendMessage($type, $deviceToken, $message, $payLoadData = array()) {
       
         $result = FALSE;
+		$type = strtoupper($type);
         switch ($type) {
             case DEVICE_TYPE_IOS:
        
