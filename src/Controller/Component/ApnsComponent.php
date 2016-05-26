@@ -22,20 +22,19 @@ class ApnsComponent extends Component {
     private $tag = 'apns';
 
     public function sendPushMessage($deviceToken, $config = array(), $extra = array()) {
-       
+     
         if (!isset($config['message'])) {
             return false;
         }
-
         $ctx = stream_context_create();
-        stream_context_set_option($ctx, 'ssl', 'local_cert', WWW_ROOT . $config['cert']);
+        stream_context_set_option($ctx, 'ssl', 'local_cert', $config['cert']);
         stream_context_set_option($ctx, 'ssl', 'passphrase', $config['passphrase']);
 
         // Open a connection to the APNS server
         $fp = stream_socket_client($config['gateway'], $err, $errstr, 60, STREAM_CLIENT_CONNECT | STREAM_CLIENT_PERSISTENT, $ctx);
 
         if (!$fp) {
-            return "Failed to connect: $err $errstr";
+            die("Failed to connect: $err $errstr");
         }
         //echo 'Connected to APNS.', $this->tag ,'<br>';
         
@@ -62,10 +61,10 @@ class ApnsComponent extends Component {
         
         // Send it to the server
         $result = fwrite($fp, $msg, strlen($msg));
-        print_r($result); die;
+        
         // Close the connection to the server
         fclose($fp);
-        
+       
         if (!$result) {
             return FALSE;
         } else {
