@@ -66,6 +66,11 @@ class UsersController extends AppController
 									if(isset($user['password'])) { unset($user['password']); }
 									$return_data = $user;
 									$request_data['user_id']=$user['id'];
+									/****** Random token ***************/
+										$user_token = $this->generateRandomString();
+										$request_data['usertoken']=$return_data['usertoken']=$user_token;
+									/****** End Random token ***************/
+									
 									$userDevice = $this->UserDevices->newEntity();
 									$userDevice = $this->UserDevices->patchEntity($userDevice, $request_data);
 									$this->UserDevices->save($userDevice);
@@ -92,7 +97,7 @@ class UsersController extends AppController
 	}
     
     public function logout()
-	{
+	{	
 		$this->autoRender = FALSE;
 			$request_data = $this->request->input('json_decode', true);
 		if(!isset($request_data['device_type']) OR !isset($request_data['device_token'])) {
@@ -101,7 +106,7 @@ class UsersController extends AppController
 			$return_data = "Device type and device token missing";
 		} else {
 			$this->loadmodel('UserDevices');
-			$this->UserDevices->deleteAll(['device_type' => $request_data['device_type'],'device_token' => $request_data['device_token']]);
+			$this->UserDevices->deleteAll(['device_type' => $request_data['device_type'],'usertoken' => $this->request->header('usertoken'),'user_id' => $this->Auth->user('id')]);
 			
 			$this->Auth->logout();
 			//return $this->redirect(SITE_URL);

@@ -19,7 +19,8 @@ class UserDevice extends Entity
         'id' => true,
         'user_id' => true,
         'device_type' => true,
-        'device_token' => true
+        'device_token' => true,
+        'usertoken' => true
     ];
 
 }

@@ -87,8 +87,9 @@ class AppController extends Controller
 	function beforeFilter(Event $event)
 	{
 		if (!in_array($this->request->params['action'],array('login', 'add','register','Pushnotifications','retrieveNotifications','forgotPassword','resetPassword','verifyResetPassToken'))) {
-			if ($this->request->header('username') && $this->request->header('user-token')) {
-					$authenticate = $this->userAuthenticate($this->request->header('username'), $this->request->header('user-token'));
+			
+			if ($this->request->header('username') && $this->request->header('usertoken')) {
+					$authenticate = $this->userAuthenticate($this->request->header('username'), $this->request->header('usertoken'));
 					if (!$authenticate) {
 						throw new BadRequestException("Data Missing");
 					}
@@ -100,7 +101,7 @@ class AppController extends Controller
 		$this->Auth->allow();
 	}
 	
-	public function generateRandomString($length = 10) {
+	public function generateRandomString($length = 15) {
 			$characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 			$charactersLength = strlen($characters);
 			$randomString = '';
@@ -130,14 +131,14 @@ class AppController extends Controller
 	
 	
 	public function userAuthenticate($username = null, $user_token = null)
-    {
+    { 
         $this->loadModel('Users');
         $this->loadModel('UserDevices');
 		// Check if user with the provided username exists
 
         $users = $this->Users->find('all',['contain' => [
 				'UserDevices'=> function ($q) use ($user_token) {
-					return $q->where(['UserDevices.device_token'=>$user_token]);
+					return $q->where(['UserDevices.usertoken'=>$user_token]);
 				}
 		]])->where(['Users.email'=>$username])->first();
 		
