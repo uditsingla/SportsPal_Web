@@ -36,6 +36,7 @@ class UsersController extends AppController
 			$user = $this->Users->newEntity();
 			switch (true) {
 					case $this->request->is('post'):
+					//print_r($this->Auth->user()); die;
 						$request_data = $this->request->input('json_decode', true);
 						if(!isset($request_data['email'])) {
 							$status  = 200;
@@ -49,7 +50,9 @@ class UsersController extends AppController
 							} else {
 								if(isset($request_data['social_id']) AND ($request_data['social_id'])!='') {
 									$user= $this->Users->find('all')->select()->where(['Users.email'=>$request_data['email'],'Users.social_id'=>$request_data['social_id']])->first();
-									
+									if($user) {
+										$user = $user->toArray(); 
+									}
 								} else {
 									$user = $this->Auth->identify();
 								}
@@ -66,6 +69,8 @@ class UsersController extends AppController
 									$userDevice = $this->UserDevices->newEntity();
 									$userDevice = $this->UserDevices->patchEntity($userDevice, $request_data);
 									$this->UserDevices->save($userDevice);
+									
+									 $this->Auth->setUser($user);
 			
 								}
 							}

@@ -16,6 +16,9 @@ namespace App\Controller;
 
 use Cake\Controller\Controller;
 use Cake\Event\Event;
+use Cake\Core\Exception\Exception;
+use Cake\Network\Exception\HttpException;
+use Cake\Network\Exception\BadRequestException;
 
 /**
  * Application Controller
@@ -83,6 +86,17 @@ class AppController extends Controller
 	
 	function beforeFilter(Event $event)
 	{
+		if (!in_array($this->request->params['action'],array('login', 'add','register','Pushnotifications','retrieveNotifications','forgotPassword','resetPassword','verifyResetPassToken'))) {
+			if ($this->request->header('username') && $this->request->header('user-token')) {
+					$authenticate = $this->userAuthenticate($this->request->header('username'), $this->request->header('user-token'));
+					if (!$authenticate) {
+						throw new BadRequestException("Data Missing");
+					}
+			} else {
+				throw new BadRequestException("Data Missing");
+			}
+		}
+		//print_r($this->request->header('username')); die;
 		$this->Auth->allow();
 	}
 	
@@ -113,4 +127,28 @@ class AppController extends Controller
 		  return $miles;
 	  }
 	}
+	
+	
+	public function userAuthenticate($username = null, $user_token = null)
+    {
+        $this->loadModel('Users');
+        $this->loadModel('UserDevices');
+		// Check if user with the provided username exists
+
+        $users = $this->Users->find('all',['contain' => [
+				'UserDevices'=> function ($q) use ($user_token) {
+					return $q->where(['UserDevices.device_token'=>$user_token]);
+				}
+		]])->where(['Users.email'=>$username])->first();
+		
+        if (empty($users)) {
+            return false;
+        } else {
+            if(count($users['user_devices'])==0) {
+				return false;
+			} else {
+				return true;
+			}
+        }
+    }
 }
