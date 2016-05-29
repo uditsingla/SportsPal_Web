@@ -25,5 +25,7 @@ class GameChallengesTable extends Table
         $this->displayField('id');
         $this->primaryKey('id');
 		$this->addBehavior('Timestamp');
+		$this->belongsTo('Users',['foreignKey' => 'user_id']);
+		$this->belongsTo('Teams',['foreignKey' => 'team_id']);
     }
 }

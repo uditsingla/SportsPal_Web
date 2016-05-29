@@ -16,7 +16,7 @@ class GamesController extends AppController
 		parent::initialize();
 		$this->loadComponent('RequestHandler');
 		//$this->RequestHandler->config('inputTypeMap.json', ['json_decode', true]);
-   
+		$this->loadComponent('Notifications');
 	}
     
 	public function beforeFilter(\Cake\Event\Event $event)
@@ -276,7 +276,7 @@ class GamesController extends AppController
 						case $this->request->is('get'):
 								if($game_id!='') {
 								
-									$allChallenge = $this->GameChallenges->find('all')->where(['GameChallenges.game_id'=>$game_id]);
+									$allChallenge = $this->GameChallenges->find('all',['contain' => ['Teams', 'Users']])->where(['GameChallenges.game_id'=>$game_id]);
 									$success = true;
 								} else {
 									$allChallenge="Game id required";
@@ -295,6 +295,7 @@ class GamesController extends AppController
 								$return_data = "Data Missing";
 							} else {
 								$challengeDetails=$this->Games->find()->where(['id'=>$game_id])->first();
+								
 								if(count($challengeDetails)==0) {
 									$status  = 200;
 									$success = false;
@@ -315,6 +316,9 @@ class GamesController extends AppController
 										$success = true;
 										$return_data = "Challenge set";	
 										$data['challenge_id'] = $ifChanllenge->id;	
+										
+										//$this->Notifications->notifyGameChallenge($request_data['user_id'],$ifChanllenge->id,$request_data['creator_id']);
+										
 									} else {
 										$status  = 200;
 										$success = false;
