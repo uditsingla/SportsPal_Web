@@ -24,10 +24,10 @@ class PushnotificationsShell extends Shell {
      * @access public   
      */
     public function retrieveNotifications() {
-echo "HEREE";        
+        
         // Fetch the Notifications from the database
         $notifications_data = $this->Notifications->getNotifications();
-print_r($notifications_data); die;
+
         // Check if notifications were retrieved
 			if(count($notifications_data)>0) {
                 $processed_notifications = array();
