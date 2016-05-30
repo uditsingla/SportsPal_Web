@@ -82,5 +82,85 @@ class NotificationsComponent extends Component {
 			$Notifications = $this->Notifications->patchEntity($Notifications, $request_data);
 			$this->Notifications->save($Notifications);
     } 
+	
+	 public function notifyGameChallenge($user_id, $game_id, $challenge_id, $sender_id) {
+			$payload=array();
+			$this->Users = TableRegistry::get('Users');
+			$this->Games = TableRegistry::get('Games');
+			$this->GameChallenges = TableRegistry::get('GameChallenges');
+			$this->Notifications = TableRegistry::get('Notifications');
+			$request_data="";
+			$request_data['user_id']=$user_id;
+			$request_data['type']=$payload['type']="game_challenge_by_user";
+			$request_data['message']="Your game challenged by user";
+
+			$userDetails=$this->Users->getUserdetails($user_id);
+			if($userDetails) { 
+				$payload['user_details']=$userDetails;
+			}
+			
+			$userDetails=$this->Users->getUserdetails($sender_id);
+			if($userDetails) { 
+				$payload['sender_details']=$userDetails;
+			}
+			
+			$gameDetails=$this->Games->getGamedetails($game_id);
+			if($gameDetails) {
+				$payload['game_details']=$gameDetails;
+			}
+			
+			$GameChallengesDetails=$this->GameChallenges->getGameChallengesdetails($challenge_id);
+			if($GameChallengesDetails) {
+				$payload['game_challenge_details']=$GameChallengesDetails;
+			}
+			
+			$request_data['payload']=json_encode($payload);	
+			$user = $this->Notifications->newEntity();
+			$Notifications = $this->Notifications->newEntity();
+			$Notifications = $this->Notifications->patchEntity($Notifications, $request_data);
+			$this->Notifications->save($Notifications);
+    } 
+	
+	public function GameChallengeStatus($user_id, $game_id, $challenge_id, $status) {
+			$payload=array();
+			$this->Users = TableRegistry::get('Users');
+			$this->Games = TableRegistry::get('Games');
+			$this->GameChallenges = TableRegistry::get('GameChallenges');
+			$this->Notifications = TableRegistry::get('Notifications');
+			$request_data="";
+			$request_data['user_id']=$user_id;
+			if($status=='accepted') {
+				$request_data['type']=$payload['type']="game_challenge_accepted_by_admin";
+				$request_data['message']="Game creator accepted game challenge";
+			} else {
+				$request_data['type']=$payload['type']="game_challenge_rejected_by_admin";
+				$request_data['message']="Game creator rejected game challenge";
+			}
+			$userDetails=$this->Users->getUserdetails($user_id);
+			if($userDetails) { 
+				$payload['user_details']=$userDetails;
+			}
+			
+			/** $userDetails=$this->Users->getUserdetails($sender_id);
+			if($userDetails) { 
+				$payload['sender_details']=$userDetails;
+			} **/
+			
+			$gameDetails=$this->Games->getGamedetails($game_id);
+			if($gameDetails) {
+				$payload['game_details']=$gameDetails;
+			}
+			
+			$GameChallengesDetails=$this->GameChallenges->getGameChallengesdetails($challenge_id);
+			if($GameChallengesDetails) {
+				$payload['game_challenge_details']=$GameChallengesDetails;
+			}
+			
+			$request_data['payload']=json_encode($payload);	
+			$user = $this->Notifications->newEntity();
+			$Notifications = $this->Notifications->newEntity();
+			$Notifications = $this->Notifications->patchEntity($Notifications, $request_data);
+			$this->Notifications->save($Notifications);
+    } 
 }
 ?>

@@ -50,7 +50,9 @@ class GamesController extends AppController
 										if(isset($search_keyword) && $search_keyword!='') {
 											$whr['Games.name LIKE']='%'.$search_keyword.'%';
 										}
-										$allGames = $this->Games->find('all',['contain' => ['Users', 'Sports']])->select(['Games.id','Games.name','Games.sport_id','Games.user_id','Games.game_type','Games.team_id','Games.date','Games.time','Games.latitude','Games.longitude','Games.address','Games.modified','Games.created','Users.first_name','Users.last_name','Users.email','Sports.name'])->where($whr);
+										
+										$allGames = $this->Games->find('all',['contain' => ['Users', 'Sports', 'Teams']])->select(['Games.id','Games.name','Games.sport_id','Games.user_id','Games.game_type','Games.team_id','Games.date','Games.time','Games.latitude','Games.longitude','Games.address','Games.modified','Games.created','Users.first_name','Users.last_name','Users.email','Sports.name','Teams.team_name'])->where($whr);
+										
 										$allGamesSet=array();
 										foreach($allGames as $allGame) {
 											
@@ -318,7 +320,7 @@ class GamesController extends AppController
 										$return_data = "Challenge set";	
 										$data['challenge_id'] = $ifChanllenge->id;	
 										
-										//$this->Notifications->notifyGameChallenge($request_data['user_id'],$ifChanllenge->id,$request_data['creator_id']);
+										$this->Notifications->notifyGameChallenge($challengeDetails['user_id'],$game_id,$ifChanllenge->id,$request_data['user_id']);
 										
 									} else {
 										$status  = 200;
@@ -347,6 +349,7 @@ class GamesController extends AppController
 									$status  = 200;
 									$success = true;
 									$return_data = "Challenge deleted successfully";	
+									$this->Notifications->GameChallengeStatus($challengeDetails['user_id'],$challengeDetails['game_id'],$request_data['challenge_id'],'rejected');
 								}
 							}
 							break;
@@ -404,6 +407,7 @@ class GamesController extends AppController
 										$success = true;
 										$return_data = "Challenge accepted";	
 										$data['challenge_id'] = $ifChanllenge->id;	
+										$this->Notifications->GameChallengeStatus($challengeDetails['user_id'],$challengeDetails['game_id'],$ifChanllenge->id,'accepted');
 									} else {
 										$status  = 200;
 										$success = false;

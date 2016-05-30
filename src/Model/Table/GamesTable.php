@@ -27,6 +27,15 @@ class GamesTable extends Table
 		$this->addBehavior('Timestamp');
 		$this->belongsTo('Users',['foreignKey' => 'user_id']);
 		$this->belongsTo('Sports',['foreignKey' => 'sport_id']);
+		$this->belongsTo('Teams',['foreignKey' => 'team_id']);
 		$this->hasMany('GameChallenges',['foreignKey' => 'game_id']);
     }
+	
+	public function getGamedetails($game_id){	
+		if($game_id) { 
+			return $this->findById($game_id)->select(['id','name'])->first();
+		} else {
+			return false;
+		}
+	}
 }

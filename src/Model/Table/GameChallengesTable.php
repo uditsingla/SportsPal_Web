@@ -28,4 +28,12 @@ class GameChallengesTable extends Table
 		$this->belongsTo('Users',['foreignKey' => 'user_id']);
 		$this->belongsTo('Teams',['foreignKey' => 'team_id']);
     }
+	
+	public function getGameChallengesdetails($challenge_id){	
+		if($challenge_id) { 
+			return $this->find('all',['contain' => ['Teams', 'Users']])->where(['GameChallenges.id'=>$challenge_id])->first();
+		} else {
+			return false;
+		}
+	}
 }
