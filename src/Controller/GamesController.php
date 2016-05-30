@@ -303,10 +303,11 @@ class GamesController extends AppController
 										
 								} else {
 									$content_array="";
+									
 									$GameChallenges = $this->GameChallenges->newEntity();
 									$content_array['game_id']=$game_id;
 									$content_array['user_id']=$request_data['user_id'];
-									$content_array['team_id']=(isset($request_data['challenge_to'])?$request_data['challenge_to']:'0');
+									$content_array['team_id']=(isset($request_data['team_id'])?$request_data['team_id']:'0');
 									$content_array['status']="0";
 									
 									$TeamChallenges = $this->GameChallenges->patchEntity($GameChallenges, $content_array);
@@ -410,6 +411,46 @@ class GamesController extends AppController
 									}
 								}
 							}
+							break;
+						default:
+							$status  = 400;
+							$success = false;
+							$return_data = "This method not allowed";
+							break;
+				}
+		} catch (Exception $e) {
+				$status  = 400;
+				$return_data= json_encode(array('exception_message'=>$e->getMessage()));
+				$success = false;
+		}
+		$this->response->type('json');
+		$json = json_encode(array('status'=>$status,'message'=>$return_data,'success'=>$success,'data'=>$data));
+		$this->response->statusCode($status);
+		$this->response->body($json);
+		
+	}
+	public function users($user_id=null){
+		
+		try {
+			$this->autoRender = FALSE;	
+			$this->loadmodel('Games');
+			$this->loadmodel('GameChallenges');
+			$data="";			
+			switch (true) {
+						case $this->request->is('get'):
+								if($user_id!='') {
+								
+									$allChallenge = $this->Games->find('all',['contain' => ['GameChallenges'=>['Teams', 'Users']]])->where(['Games.user_id'=>$user_id]);
+									
+									$success = true;
+								} else {
+									$allChallenge="User id required";
+									$success = false;
+								}
+								
+								$status  = 200;
+								$return_data = $allChallenge;	
+								
 							break;
 						default:
 							$status  = 400;
