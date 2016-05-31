@@ -38,7 +38,7 @@ class NotificationsComponent extends Component {
 			if($teamDetails) {
 				$payload['team_details']=$teamDetails;
 			}
-			
+			$payload['timestamp']=time();
 			$request_data['payload']=json_encode($payload);	
 			$user = $this->Notifications->newEntity();
 			$Notifications = $this->Notifications->newEntity();
@@ -75,7 +75,7 @@ class NotificationsComponent extends Component {
 			if($teamDetails) {
 				$payload['team_details']=$teamDetails;
 			}
-			
+			$payload['timestamp']=time();
 			$request_data['payload']=json_encode($payload);	
 			$user = $this->Notifications->newEntity();
 			$Notifications = $this->Notifications->newEntity();
@@ -113,7 +113,7 @@ class NotificationsComponent extends Component {
 			if($GameChallengesDetails) {
 				$payload['game_challenge_details']=$GameChallengesDetails;
 			}
-			
+			$payload['timestamp']=time();
 			$request_data['payload']=json_encode($payload);	
 			$user = $this->Notifications->newEntity();
 			$Notifications = $this->Notifications->newEntity();
@@ -155,7 +155,7 @@ class NotificationsComponent extends Component {
 			if($GameChallengesDetails) {
 				$payload['game_challenge_details']=$GameChallengesDetails;
 			}
-			
+			$payload['timestamp']=time();
 			$request_data['payload']=json_encode($payload);	
 			$user = $this->Notifications->newEntity();
 			$Notifications = $this->Notifications->newEntity();

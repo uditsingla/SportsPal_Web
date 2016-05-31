@@ -161,8 +161,9 @@ class UsersController extends AppController
 							if(isset($request_data['image']) AND ($request_data['image'])!="") {
 								$img = $request_data['image'];
 								unset($request_data['image']);
-								$img = str_replace('data:image/png;base64,', '', $img);
-								$img = str_replace(' ', '+', $img);
+								//$img = str_replace('data:image/png;base64,', '', $img);
+								$dataImage = explode(',', $img);
+								$img = str_replace(' ', '+', $dataImage[1]);
 								$data = base64_decode($img);
 								$file = "images/" . uniqid() . '.png';
 								$success = file_put_contents($file, $data);
@@ -231,6 +232,20 @@ class UsersController extends AppController
 								} else {
 									$result = $this->Users->findByEmail($request_data['email']);	
 									if($result->count()==0) {
+										if(isset($request_data['image']) AND ($request_data['image'])!="") {
+											$img = $request_data['image'];
+											unset($request_data['image']);
+											//$img = str_replace('data:image/png;base64,', '', $img);
+											$dataImage = explode(',', $img);
+											$img = str_replace(' ', '+', $dataImage[1]);
+											$data = base64_decode($img);
+											$file = "images/" . uniqid() . '.png';
+											$success = file_put_contents($file, $data);
+											if($success) {
+												$request_data['image']=$file;
+											}
+										}
+							
 										$user = $this->Users->patchEntity($user, $request_data);
 										if ($this->Users->save($user)) {
 											$status  = 200;
