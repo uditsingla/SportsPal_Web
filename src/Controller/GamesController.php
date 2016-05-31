@@ -444,7 +444,7 @@ class GamesController extends AppController
 						case $this->request->is('get'):
 								if($user_id!='') {
 								
-									$allChallenge = $this->Games->find('all',['contain' => ['GameChallenges'=>['Teams', 'Users']]])->where(['Games.user_id'=>$user_id]);
+									$allChallenge = $this->Games->find('all',['contain' => ['GameChallenges'=>['Teams', 'Users'],'Sports','Teams']])->where(['Games.user_id'=>$user_id]);
 									
 									$success = true;
 								} else {
