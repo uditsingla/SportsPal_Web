@@ -162,8 +162,8 @@ class UsersController extends AppController
 								$img = $request_data['image'];
 								unset($request_data['image']);
 								//$img = str_replace('data:image/png;base64,', '', $img);
-								$dataImage = explode(',', $img);
-								$img = str_replace(' ', '+', $dataImage[1]);
+								//$dataImage = explode(',', $img);
+								//$img = str_replace(' ', '+', $dataImage[1]);
 								$data = base64_decode($img);
 								$file = "images/" . uniqid() . '.png';
 								$success = file_put_contents($file, $data);
@@ -236,8 +236,8 @@ class UsersController extends AppController
 											$img = $request_data['image'];
 											unset($request_data['image']);
 											//$img = str_replace('data:image/png;base64,', '', $img);
-											$dataImage = explode(',', $img);
-											$img = str_replace(' ', '+', $dataImage[1]);
+											//$dataImage = explode(',', $img);
+											//$img = str_replace(' ', '+', $dataImage[1]);
 											$data = base64_decode($img);
 											$file = "images/" . uniqid() . '.png';
 											$success = file_put_contents($file, $data);
