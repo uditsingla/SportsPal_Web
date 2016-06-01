@@ -51,7 +51,7 @@ class GamesController extends AppController
 											$whr['Games.name LIKE']='%'.$search_keyword.'%';
 										}
 										
-										$allGames = $this->Games->find('all',['contain' => ['Users', 'Sports', 'Teams']])->select(['Games.id','Games.name','Games.sport_id','Games.user_id','Games.game_type','Games.team_id','Games.date','Games.time','Games.latitude','Games.longitude','Games.address','Games.modified','Games.created','Users.first_name','Users.last_name','Users.email','Users.image','Sports.name','Teams.team_name'])->where($whr);
+										$allGames = $this->Games->find('all',['contain' => ['Users', 'Sports', 'Teams']])->select(['Games.id','Games.name','Games.sport_id','Games.user_id','Games.game_type','Games.team_id','Games.date','Games.time','Games.latitude','Games.longitude','Games.address','Games.modified','Games.created','Users.first_name','Users.last_name','Users.email','Users.image','Sports.name','Teams.team_name'])->where($whr)->order(['Games.id' => 'DESC']);
 										
 										$allGamesSet=array();
 										foreach($allGames as $allGame) {
@@ -72,7 +72,7 @@ class GamesController extends AppController
 								
 									
 									} else {
-										$allGames = $this->Games->find('all',['contain' => ['Users', 'Sports']])->select(['Games.id','Games.sport_id','Games.name','Games.user_id','Games.game_type','Games.team_id','Games.date','Games.time','Games.latitude','Games.longitude','Games.address','Games.modified','Games.created','Users.first_name','Users.last_name','Users.email','Users.image','Sports.name']);
+										$allGames = $this->Games->find('all',['contain' => ['Users', 'Sports']])->select(['Games.id','Games.sport_id','Games.name','Games.user_id','Games.game_type','Games.team_id','Games.date','Games.time','Games.latitude','Games.longitude','Games.address','Games.modified','Games.created','Users.first_name','Users.last_name','Users.email','Users.image','Sports.name'])->order(['Games.id' => 'DESC']);;
 										$success = true;
 									}
 							
@@ -148,7 +148,7 @@ class GamesController extends AppController
 									if(isset($request_data['is_creator']) AND ($request_data['is_creator'])==1) {
 										$whr['Games.user_id']=$request_data['user_id'];
 									}
-									$allGames = $this->Games->find('all',['contain' => ['Users', 'Sports']])->select(['Games.id','Games.name','Games.sport_id','Games.user_id','Games.game_type','Games.team_id','Games.date','Games.time','Games.latitude','Games.longitude','Games.address','Games.modified','Games.created','Users.first_name','Users.last_name','Users.email','Users.image','Sports.name'])->where($whr);
+									$allGames = $this->Games->find('all',['contain' => ['Users', 'Sports']])->select(['Games.id','Games.name','Games.sport_id','Games.user_id','Games.game_type','Games.team_id','Games.date','Games.time','Games.latitude','Games.longitude','Games.address','Games.modified','Games.created','Users.first_name','Users.last_name','Users.email','Users.image','Sports.name'])->where($whr)->order(['Games.id' => 'DESC']);
 									/******************************************* Get NearBy *********************************/
 									
 										$allGamesSet=[];
@@ -174,7 +174,7 @@ class GamesController extends AppController
 								}
 								
 							} else {
-								$allGames = $this->Games->find('all',['contain' => ['Users', 'Sports']])->select(['Games.id','Games.sport_id','Games.name','Games.user_id','Games.game_type','Games.team_id','Games.date','Games.time','Games.latitude','Games.longitude','Games.address','Games.modified','Games.created','Users.first_name','Users.last_name','Users.email','Users.image','Sports.name']);
+								$allGames = $this->Games->find('all',['contain' => ['Users', 'Sports']])->select(['Games.id','Games.sport_id','Games.name','Games.user_id','Games.game_type','Games.team_id','Games.date','Games.time','Games.latitude','Games.longitude','Games.address','Games.modified','Games.created','Users.first_name','Users.last_name','Users.email','Users.image','Sports.name'])->order(['Games.id' => 'DESC']);
 								$success = true;
 							}
 								$status  = 200;
@@ -278,7 +278,7 @@ class GamesController extends AppController
 						case $this->request->is('get'):
 								if($game_id!='') {
 								
-									$allChallenge = $this->GameChallenges->find('all',['contain' => ['Teams', 'Users']])->where(['GameChallenges.game_id'=>$game_id]);
+									$allChallenge = $this->GameChallenges->find('all',['contain' => ['Teams', 'Users']])->where(['GameChallenges.game_id'=>$game_id])->order(['GameChallenges.id' => 'DESC']);
 									$success = true;
 								} else {
 									$allChallenge="Game id required";
@@ -444,7 +444,7 @@ class GamesController extends AppController
 						case $this->request->is('get'):
 								if($user_id!='') {
 								
-									$allChallenge = $this->Games->find('all',['contain' => ['GameChallenges'=>['Teams', 'Users'],'Sports','Teams']])->where(['Games.user_id'=>$user_id]);
+									$allChallenge = $this->Games->find('all',['contain' => ['GameChallenges'=>['Teams', 'Users'],'Sports','Teams']])->where(['Games.user_id'=>$user_id])->order(['Games.id' => 'DESC']);
 									
 									$success = true;
 								} else {

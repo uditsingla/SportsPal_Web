@@ -50,7 +50,7 @@ class TeamsController extends AppController
 									if(isset($search_keyword) && $search_keyword!='') {
 										$whr['Teams.team_name LIKE']='%'.$search_keyword.'%';
 									}
-									$allTeams = $this->Teams->find('all',['contain' => ['Users', 'Sports']])->select(['Teams.id','Teams.sport_id','Teams.team_name','Teams.team_type','Teams.members_limit','Teams.latitude','Teams.longitude','Teams.address','Teams.creator_id','Teams.created','Teams.modified','Users.first_name','Users.last_name','Users.email','Users.image','Sports.name'])->where($whr);
+									$allTeams = $this->Teams->find('all',['contain' => ['Users', 'Sports']])->select(['Teams.id','Teams.sport_id','Teams.team_name','Teams.team_type','Teams.members_limit','Teams.latitude','Teams.longitude','Teams.address','Teams.creator_id','Teams.created','Teams.modified','Users.first_name','Users.last_name','Users.email','Users.image','Sports.name'])->where($whr)->order(['Teams.id' => 'DESC']);
 									$success = true;
 								} else {
 									$allTeams="User not found";
@@ -59,7 +59,7 @@ class TeamsController extends AppController
 							
 								
 							} else {
-								$allTeams = $this->Teams->find('all',['contain' => ['Users', 'Sports']])->select(['Teams.id','Teams.sport_id','Teams.team_name','Teams.team_type','Teams.members_limit','Teams.latitude','Teams.longitude','Teams.address','Teams.creator_id','Teams.created','Teams.modified','Users.first_name','Users.last_name','Users.email','Users.image','Sports.name']);
+								$allTeams = $this->Teams->find('all',['contain' => ['Users', 'Sports']])->select(['Teams.id','Teams.sport_id','Teams.team_name','Teams.team_type','Teams.members_limit','Teams.latitude','Teams.longitude','Teams.address','Teams.creator_id','Teams.created','Teams.modified','Users.first_name','Users.last_name','Users.email','Users.image','Sports.name'])->order(['Teams.id' => 'DESC']);
 								$success = true;
 							}
 							
@@ -228,7 +228,7 @@ class TeamsController extends AppController
 									if(isset($request_data['is_creator']) AND ($request_data['is_creator'])==1) {
 										$whr['Teams.creator_id']=$request_data['user_id'];
 									}
-									$return_data = $this->Teams->find('all',['contain' => ['Users', 'Sports']])->select(['Teams.id','Teams.sport_id','Teams.team_name','Teams.team_type','Teams.members_limit','Teams.latitude','Teams.longitude','Teams.address','Teams.creator_id','Teams.created','Teams.modified','Users.first_name','Users.last_name','Users.email','Users.image','Sports.name'])->where($whr);
+									$return_data = $this->Teams->find('all',['contain' => ['Users', 'Sports']])->select(['Teams.id','Teams.sport_id','Teams.team_name','Teams.team_type','Teams.members_limit','Teams.latitude','Teams.longitude','Teams.address','Teams.creator_id','Teams.created','Teams.modified','Users.first_name','Users.last_name','Users.email','Users.image','Sports.name'])->where($whr)->order(['Teams.id' => 'DESC']);
 									/******************************************* Get NearBy *********************************/
 									if(isset($request_data['is_nearby']) AND ($request_data['is_nearby'])==1) {
 										$allGamesSet=[];
@@ -345,7 +345,7 @@ class TeamsController extends AppController
 			switch (true) {
 						case $this->request->is('get'):
 							
-								$allTeamMembers = $this->TeamMembers->find('all',['contain' => ['Users']])->select(['TeamMembers.id','TeamMembers.team_id','TeamMembers.user_id','TeamMembers.status','Users.first_name','Users.last_name','Users.email','Users.image'])->where(['TeamMembers.team_id'=>$team_id,'TeamMembers.status'=>'0']);
+								$allTeamMembers = $this->TeamMembers->find('all',['contain' => ['Users']])->select(['TeamMembers.id','TeamMembers.team_id','TeamMembers.user_id','TeamMembers.status','Users.first_name','Users.last_name','Users.email','Users.image'])->where(['TeamMembers.team_id'=>$team_id,'TeamMembers.status'=>'0'])->order(['TeamMembers.id' => 'DESC']);
 								$status  = 200;
 								$success = true;
 								$return_data = $allTeamMembers;	
@@ -436,7 +436,7 @@ class TeamsController extends AppController
 			switch (true) {
 						case $this->request->is('get'):
 							
-								$allChallenge = $this->TeamChallenges->find('all')->where(['TeamChallenges.team2_id'=>$team_id]);
+								$allChallenge = $this->TeamChallenges->find('all')->where(['TeamChallenges.team2_id'=>$team_id])->order(['TeamChallenges.id' => 'DESC']);
 								$status  = 200;
 								$success = true;
 								$return_data = $allChallenge;	
@@ -524,7 +524,7 @@ class TeamsController extends AppController
 			switch (true) {
 						case $this->request->is('get'):
 							
-								$allTeamMembers = $this->TeamMembers->find('all',['contain' => ['Teams'=>['Users','Sports']]])->autoFields(true)->select(['TeamMembers.id','TeamMembers.team_id','TeamMembers.user_id','TeamMembers.status','Teams.team_name'])->where(['TeamMembers.user_id'=>$user_id,'TeamMembers.status'=>'0']);
+								$allTeamMembers = $this->TeamMembers->find('all',['contain' => ['Teams'=>['Users','Sports']]])->autoFields(true)->select(['TeamMembers.id','TeamMembers.team_id','TeamMembers.user_id','TeamMembers.status','Teams.team_name'])->where(['TeamMembers.user_id'=>$user_id,'TeamMembers.status'=>'0'])->order(['TeamMembers.id' => 'DESC']);
 								
 								$status  = 200;
 								$success = true;

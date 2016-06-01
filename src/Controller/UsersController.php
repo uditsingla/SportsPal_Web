@@ -297,7 +297,7 @@ class UsersController extends AppController
 							$success=FALSE;
 							$status  = 200;
 						} else {
-							$return_data= $this->SportsPreferences->find()->select(['id', 'sport_id','Sports.name'])->leftJoin(['Sports' => 'sports'],['Sports.id = SportsPreferences.sport_id'])->where(['user_id'=>$user_id]);
+							$return_data= $this->SportsPreferences->find()->select(['id', 'sport_id','Sports.name'])->leftJoin(['Sports' => 'sports'],['Sports.id = SportsPreferences.sport_id'])->where(['user_id'=>$user_id])->order(['SportsPreferences.id' => 'DESC']);
 							$success=TRUE;
 							$status  = 200;
 						}
@@ -543,7 +543,7 @@ class UsersController extends AppController
 							$success=FALSE;
 							$status  = 200;
 						} else {
-							$return_data= $this->UserFavLocations->find()->select(['id', 'latitude','longitude','address'])->where(['user_id'=>$user_id]);
+							$return_data= $this->UserFavLocations->find()->select(['id', 'latitude','longitude','address'])->where(['user_id'=>$user_id])->order(['UserFavLocations.id' => 'DESC']);
 							$success=TRUE;
 							$status  = 200;
 						}
