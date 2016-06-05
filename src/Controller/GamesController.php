@@ -499,7 +499,7 @@ class GamesController extends AppController
 										$member_limit=$return_data['member_limit'];
 										if($game_type=='individual') {
 											$total_members= $this->GameMembers->find('all')->select()->where(['GameMembers.game_id'=>$game_id,'status'=>1]);
-												if(count($total_members)<$member_limit) {
+												if(count($total_members->toArray())<$member_limit) {
 													$GameMembers = $this->GameMembers->newEntity();
 													$content_array['game_id']=$game_id;
 													if(isset($request_data['user_id']) AND $request_data['user_id']!='') {
@@ -590,7 +590,7 @@ class GamesController extends AppController
 										$game_owner=$return_data['user_id'];
 										if($game_type=='individual') {
 											$total_members= $this->GameMembers->find('all')->select()->where(['GameMembers.game_id'=>$game_id,'status'=>1]);
-												if(count($total_members)<$member_limit) {
+												if(count($total_members->toArray())<$member_limit) {
 													if(isset($request_data['request_id']) AND $request_data['request_id']!='') {
 													 $requestData = $this->GameMembers->find('all')->select()->where(['GameMembers.id'=>$request_data['request_id']])->first();	
 														if($requestData) {
@@ -665,6 +665,46 @@ class GamesController extends AppController
 									$success = false;
 								}
 								$status  = 200;
+							break;
+						default:
+							$status  = 200;
+							$success = false;
+							$return_data = "This method not allowed";
+							break;
+				}
+		} catch (Exception $e) {
+				$status  = 400;
+				$return_data= json_encode(array('exception_message'=>$e->getMessage()));
+				$success = false;
+		}
+		$this->response->type('json');
+		$json = json_encode(array('status'=>$status,'message'=>$return_data,'success'=>$success,'data'=>$data));
+		$this->response->statusCode($status);
+		$this->response->body($json);
+		
+	}
+	
+	public function memberrequests($user_id){
+		try {
+			$this->autoRender = FALSE;	
+			$this->loadmodel('Games');
+			$this->loadmodel('GameMembers');
+			$data="";			
+			switch (true) {
+							case $this->request->is('get'):
+								if($user_id!='') {
+								
+									$allRequests = $this->Games->find('all',['contain' => ['GameMembers'=>['Users'],'Sports']])->where(['Games.user_id'=>$user_id])->order(['Games.id' => 'DESC']);
+									
+									$success = true;
+								} else {
+									$allRequests="User id required";
+									$success = false;
+								}
+								
+								$status  = 200;
+								$return_data = $allRequests;	
+								
 							break;
 						default:
 							$status  = 200;
