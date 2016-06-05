@@ -311,7 +311,12 @@ class GamesController extends AppController
 									$content_array['game_id']=$game_id;
 									$content_array['user_id']=$request_data['user_id'];
 									$content_array['team_id']=(isset($request_data['team_id'])?$request_data['team_id']:'0');
-									$content_array['status']="0";
+									if($challengeDetails['game_status']=='open') {
+										$content_array['status']="1";
+									} else {
+										$content_array['status']="0";
+									}
+									
 									
 									$TeamChallenges = $this->GameChallenges->patchEntity($GameChallenges, $content_array);
 									$ifChanllenge = $this->GameChallenges->save($GameChallenges);
