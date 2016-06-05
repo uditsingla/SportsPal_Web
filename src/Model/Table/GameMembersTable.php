@@ -8,9 +8,9 @@ use Cake\ORM\Table;
 use Cake\Validation\Validator;
 
 /**
- * Games Model
+ * GameMembers Model
  */
-class GamesTable extends Table
+class GameMembersTable extends Table
 {
 
     /**
@@ -21,22 +21,11 @@ class GamesTable extends Table
      */
     public function initialize(array $config)
     {
-        $this->table('games');
+        $this->table('game_members');
         $this->displayField('id');
         $this->primaryKey('id');
 		$this->addBehavior('Timestamp');
 		$this->belongsTo('Users',['foreignKey' => 'user_id']);
-		$this->belongsTo('Sports',['foreignKey' => 'sport_id']);
-		$this->belongsTo('Teams',['foreignKey' => 'team_id']);
-		$this->hasMany('GameChallenges',['foreignKey' => 'game_id']);
-		$this->hasMany('GameMembers',['foreignKey' => 'game_id']);
+		$this->belongsTo('Games',['foreignKey' => 'game_id']);
     }
-	
-	public function getGamedetails($game_id){	
-		if($game_id) { 
-			return $this->findById($game_id)->select(['id','name'])->first();
-		} else {
-			return false;
-		}
-	}
 }

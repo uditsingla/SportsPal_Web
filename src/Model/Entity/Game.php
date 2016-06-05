@@ -26,7 +26,9 @@ class Game extends Entity
         'time' => true,
         'latitude' => true,
         'longitude' => true,
-        'address' => true
+        'address' => true,
+        'game_status' => true,
+        'member_limit' => true
     ];
 
 }
