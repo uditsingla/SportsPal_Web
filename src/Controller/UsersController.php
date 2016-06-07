@@ -137,7 +137,7 @@ class UsersController extends AppController
 							$success=FALSE;
 							$status  = 200;
 						} else {
-							$return_data= $this->Users->find('all',['contain' => ['UserFavLocations','Teams','FavouriteUsers','Games'=>['Sports'],'SportsPreferences'=>['Sports']]])->select()->where(['Users.id'=>$user_id])->first();
+							$return_data= $this->Users->find('all',['contain' => ['UserFavLocations','Teams','FavouriteUsers','Games'=>['Users','Sports'],'SportsPreferences'=>['Sports']]])->select()->where(['Users.id'=>$user_id])->first();
 							if($return_data) {
 								unset($return_data->password);
 								$success=TRUE;
