@@ -546,7 +546,7 @@ class GamesController extends AppController
 							break;
 						case $this->request->is('get'):
 								if($game_id!='') {
-									$return_data= $this->GameMembers->find('all',['contain'=>['Users'=>['SportsPreferences']]])->select()->where(['GameMembers.game_id'=>$game_id]);
+									$return_data= $this->GameMembers->find('all',['contain'=>['Users'=>['SportsPreferences'=>['Sports']]]])->select()->where(['GameMembers.game_id'=>$game_id]);
 									$success = true;
 								} else {
 									$return_data="Game id required";
@@ -694,7 +694,7 @@ class GamesController extends AppController
 							case $this->request->is('get'):
 								if($user_id!='') {
 								
-									$allRequests = $this->Games->find('all',['contain' => ['GameMembers'=>['Users'=>['SportsPreferences']],'Sports']])->where(['Games.user_id'=>$user_id])->order(['Games.id' => 'DESC']);
+									$allRequests = $this->Games->find('all',['contain' => ['GameMembers'=>['Users'=>['SportsPreferences'=>['Sports']]],'Sports']])->where(['Games.user_id'=>$user_id])->order(['Games.id' => 'DESC']);
 									
 									$success = true;
 								} else {
