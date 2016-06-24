@@ -40,6 +40,13 @@ class AppController extends Controller
      *
      * @return void
      */
+
+    ////// add by sahoo
+    public $session_user_id;
+    public $session_user_first_name;
+    public $session_user_last_name;
+    public $pubnub;
+
     public function initialize()
     {
         parent::initialize();
@@ -148,6 +155,10 @@ class AppController extends Controller
             if(count($users['user_devices'])==0) {
 				return false;
 			} else {
+				///// add by sahoo
+				$this->session_user_id = $users['id'];
+				$this->session_user_first_name = $users['first_name'];
+				$this->session_user_last_name = $users['last_name'];
 				return true;
 			}
         }
