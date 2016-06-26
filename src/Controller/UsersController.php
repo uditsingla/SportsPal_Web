@@ -2,7 +2,7 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
-
+use Pubnub\Pubnub;
 /**
  * Users Controller
  *
@@ -38,6 +38,7 @@ class UsersController extends AppController
 					case $this->request->is('post'):
 					//print_r($this->Auth->user()); die;
 						$request_data = $this->request->input('json_decode', true);
+
 						if(!isset($request_data['email'])) {
 							$status  = 200;
 							$success = false;
@@ -70,6 +71,11 @@ class UsersController extends AppController
 										$user_token = $this->generateRandomString();
 										$request_data['usertoken']=$return_data['usertoken']=$user_token;
 									/****** End Random token ***************/
+									/******** Pubnub ******************/
+									$this->pubnub = new Pubnub(PUBLISH_KEY, SUBSCRIBE_KEY, SECRET_KEY, CIPHER_KEY, SSL_ON);
+									$this->pubnub->grant(true, false, md5($user['id']), AUTH_KEY, 0);
+									$return_data['subscribe_key']=SUBSCRIBE_KEY;
+									/********* End *****************/
 									
 									$userDevice = $this->UserDevices->newEntity();
 									$userDevice = $this->UserDevices->patchEntity($userDevice, $request_data);
