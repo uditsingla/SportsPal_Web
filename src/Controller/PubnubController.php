@@ -16,7 +16,7 @@ class PubnubController extends AppController
 	public function initialize()
     {
     	
-		//parent::initialize();
+		parent::initialize();
 		$this->loadComponent('RequestHandler');
 		//$this->RequestHandler->config('inputTypeMap.json', ['json_decode', true]);
    
@@ -24,8 +24,8 @@ class PubnubController extends AppController
     
 	public function beforeFilter(\Cake\Event\Event $event)
 	{
-		//$this->Auth->allow(['send']);
-		//parent::beforeFilter($event);		
+		$this->Auth->allow(['send']);
+		parent::beforeFilter($event);		
 	}
 	
 	public function abc(){
