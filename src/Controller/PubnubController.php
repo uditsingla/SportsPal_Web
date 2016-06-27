@@ -28,16 +28,7 @@ class PubnubController extends AppController
 		parent::beforeFilter($event);		
 	}
 	
-	public function abc(){
-		$this->autoRender=false;
-		try{
-
-		}catch(Exception $ex){
-			echo $ex->getMessage();
-		}
-		echo "in abc function";
-
-	}
+	
    
     public function send(){ 
         $status=200;
