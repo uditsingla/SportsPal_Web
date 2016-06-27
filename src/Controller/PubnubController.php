@@ -24,6 +24,7 @@ class PubnubController extends AppController
     
 	public function beforeFilter(\Cake\Event\Event $event)
 	{
+
 		$this->Auth->allow(['send']);
 		parent::beforeFilter($event);		
 	}
